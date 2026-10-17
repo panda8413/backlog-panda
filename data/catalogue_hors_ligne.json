@@ -1,0 +1,979 @@
+{
+  "games": [
+    {
+      "id": 113112,
+      "slug": "hades--1",
+      "title": "Hades",
+      "year": "2020"
+    },
+    {
+      "id": 228525,
+      "slug": "hades-ii",
+      "title": "Hades II",
+      "year": "2025"
+    },
+    {
+      "id": 23113,
+      "slug": "saint-seiya-the-hades",
+      "title": "Saint Seiya: The Hades",
+      "year": "2006"
+    },
+    {
+      "id": 134619,
+      "slug": "hades-2",
+      "title": "Hades 2",
+      "year": "2001"
+    },
+    {
+      "id": 56959,
+      "slug": "hades-star",
+      "title": "Hades' Star",
+      "year": "2019"
+    },
+    {
+      "id": 26832,
+      "slug": "black-shades",
+      "title": "Black Shades",
+      "year": "2002"
+    },
+    {
+      "id": 327927,
+      "slug": "assassins-creed-odyssey-the-fate-of-atlantis-episode-2-torment-of-hades",
+      "title": "Assassin's Creed Odyssey: The Fate of Atlantis - Episode 2: Torment of Hades",
+      "year": "2019"
+    },
+    {
+      "id": 80529,
+      "slug": "hades",
+      "title": "Hades",
+      "year": "1995"
+    },
+    {
+      "id": 297215,
+      "slug": "shade-silver",
+      "title": "Shade Silver",
+      "year": "2024"
+    },
+    {
+      "id": 8112,
+      "slug": "might-and-magic-heroes-vi-shades-of-darkness",
+      "title": "Might & Magic: Heroes VI - Shades of Darkness",
+      "year": "2013"
+    },
+    {
+      "id": 300698,
+      "slug": "shades-shadow-fight-roguelike",
+      "title": "Shades: Shadow Fight Roguelike",
+      "year": "2023"
+    },
+    {
+      "id": 151880,
+      "slug": "moonshades",
+      "title": "Moonshades",
+      "year": "2016"
+    },
+    {
+      "id": 13867,
+      "slug": "hades-nebula",
+      "title": "Hades Nebula",
+      "year": "1987"
+    },
+    {
+      "id": 73439,
+      "slug": "disneys-hades-challenge",
+      "title": "Disney's Hades Challenge",
+      "year": "1998"
+    },
+    {
+      "id": 230255,
+      "slug": "shades--1",
+      "title": "Shades",
+      "year": "1985"
+    },
+    {
+      "id": 98122,
+      "slug": "hansha-de-spark",
+      "title": "Hansha de Spark!",
+      "year": "1997"
+    },
+    {
+      "id": 306867,
+      "slug": "road-to-hades",
+      "title": "Road to Hades",
+      "year": "2024"
+    },
+    {
+      "id": 312243,
+      "slug": "realm-of-shades",
+      "title": "Realm of Shades",
+      "year": "1998"
+    },
+    {
+      "id": 346885,
+      "slug": "hades-zero",
+      "title": "H.A.D.E.S Zero",
+      "year": "2025"
+    },
+    {
+      "id": 71518,
+      "slug": "shades-of-doom",
+      "title": "Shades of Doom",
+      "year": "2001"
+    },
+    {
+      "id": 319026,
+      "slug": "shades--3",
+      "title": "Shades",
+      "year": "1985"
+    },
+    {
+      "id": 321406,
+      "slug": "shades--4",
+      "title": "Shades",
+      "year": "TBD"
+    },
+    {
+      "id": 208167,
+      "slug": "hades-star-dark-nebula",
+      "title": "Hades' Star: Dark Nebula",
+      "year": "2023"
+    },
+    {
+      "id": 127386,
+      "slug": "tower-of-shades",
+      "title": "Tower of Shades",
+      "year": "2020"
+    },
+    {
+      "id": 141084,
+      "slug": "50-shades-of-graytall",
+      "title": "50 Shades of Graytall",
+      "year": "2015"
+    },
+    {
+      "id": 36009,
+      "slug": "shades-of-black",
+      "title": "Shades of Black",
+      "year": "2015"
+    },
+    {
+      "id": 211659,
+      "slug": "outbreak-shades-of-horror",
+      "title": "Outbreak: Shades of Horror",
+      "year": "2025"
+    },
+    {
+      "id": 351780,
+      "slug": "undertale-yellow-shades-of-justice",
+      "title": "Undertale Yellow: Shades of Justice",
+      "year": "2024"
+    },
+    {
+      "id": 96354,
+      "slug": "the-road-to-hades",
+      "title": "The Road to Hades",
+      "year": "2018"
+    },
+    {
+      "id": 272017,
+      "slug": "descent-into-hades",
+      "title": "Descent into Hades",
+      "year": "2000"
+    },
+    {
+      "id": 169510,
+      "slug": "fading-shades",
+      "title": "Fading Shades",
+      "year": "2009"
+    },
+    {
+      "id": 262431,
+      "slug": "shades-of-azure",
+      "title": "Shades of Azure",
+      "year": "2022"
+    },
+    {
+      "id": 57003,
+      "slug": "raiders-of-the-broken-planet-hades-betrayal",
+      "title": "Raiders of the Broken Planet: Hades Betrayal",
+      "year": "2018"
+    },
+    {
+      "id": 112061,
+      "slug": "otherworld-shades-of-fall",
+      "title": "Otherworld: Shades of Fall",
+      "year": "TBD"
+    },
+    {
+      "id": 147017,
+      "slug": "shades-of-rayna",
+      "title": "Shades of Rayna",
+      "year": "2025"
+    },
+    {
+      "id": 98410,
+      "slug": "off-the-record-the-linden-shades",
+      "title": "Off the Record: The Linden Shades",
+      "year": "TBD"
+    },
+    {
+      "id": 259852,
+      "slug": "the-king-in-the-shades",
+      "title": "The King in the Shades",
+      "year": "2026"
+    },
+    {
+      "id": 191735,
+      "slug": "fallen-london-shades-of-yesterday",
+      "title": "Fallen London: Shades of Yesterday",
+      "year": "2020"
+    },
+    {
+      "id": 284182,
+      "slug": "legacy-of-flan-3-storm-of-hades",
+      "title": "Legacy of Flan 3: Storm of Hades",
+      "year": "2003"
+    },
+    {
+      "id": 182453,
+      "slug": "shades-of-manhattan-2",
+      "title": "Shades of Manhattan 2",
+      "year": "2011"
+    },
+    {
+      "id": 202322,
+      "slug": "yami-no-ryuuou-hadesu-no-monshou",
+      "title": "Yami no Ryuuou Hadesu no Monshou",
+      "year": "1986"
+    },
+    {
+      "id": 271002,
+      "slug": "lumins-and-shades",
+      "title": "Lumins and Shades",
+      "year": "2023"
+    },
+    {
+      "id": 268884,
+      "slug": "shades-of-darkness",
+      "title": "Shades of Darkness",
+      "year": "2018"
+    },
+    {
+      "id": 357939,
+      "slug": "master-of-pieces-jigsaw-puzzle-shades-of-nostalgia",
+      "title": "Master of Pieces Jigsaw Puzzle: Shades of Nostalgia",
+      "year": "2024"
+    },
+    {
+      "id": 337263,
+      "slug": "grim-tales-all-shades-of-black-collectors-edition",
+      "title": "Grim Tales: All Shades of Black - Collector's Edition",
+      "year": "2024"
+    },
+    {
+      "id": 354744,
+      "slug": "phase-two-slowboat-to-hades",
+      "title": "Phase Two: Slowboat To Hades",
+      "year": "TBD"
+    },
+    {
+      "id": 322409,
+      "slug": "outbreak-shades-of-horror-chromatic-split",
+      "title": "Outbreak: Shades of Horror Chromatic Split",
+      "year": "2024"
+    },
+    {
+      "id": 402009,
+      "slug": "hades-uprising",
+      "title": "Hades Uprising",
+      "year": "2026"
+    },
+    {
+      "id": 191199,
+      "slug": "spectral-shades-fragments",
+      "title": "Spectral Shades: Fragments",
+      "year": "TBD"
+    },
+    {
+      "id": 331426,
+      "slug": "outbreak-shades-of-horror-chromatic-split-anthology-collection",
+      "title": "Outbreak: Shades of Horror Chromatic Split Anthology Collection",
+      "year": "2024"
+    },
+    {
+      "id": 1028,
+      "slug": "the-legend-of-zelda-links-awakening",
+      "title": "The Legend of Zelda: Link's Awakening",
+      "year": "1993"
+    },
+    {
+      "id": 115284,
+      "slug": "the-legend-of-zelda-links-awakening--1",
+      "title": "The Legend of Zelda: Link's Awakening",
+      "year": "2019"
+    },
+    {
+      "id": 1027,
+      "slug": "the-legend-of-zelda-link-s-awakening-dx",
+      "title": "The Legend of Zelda: Link's Awakening DX",
+      "year": "1998"
+    },
+    {
+      "id": 219081,
+      "slug": "the-legend-of-zelda-links-awakening-redux",
+      "title": "The Legend of Zelda: Link's Awakening Redux",
+      "year": "2021"
+    },
+    {
+      "id": 242028,
+      "slug": "the-legend-of-zelda-links-awakening-dx-randomizer",
+      "title": "The Legend of Zelda: Link's Awakening DX Randomizer",
+      "year": "2021"
+    },
+    {
+      "id": 241229,
+      "slug": "the-legend-of-zelda-links-journey-deluxe",
+      "title": "The Legend of Zelda: Link's Journey Deluxe",
+      "year": "2007"
+    },
+    {
+      "id": 269867,
+      "slug": "the-legend-of-zelda-links-shadow",
+      "title": "The Legend of Zelda: Link's Shadow",
+      "year": "2020"
+    },
+    {
+      "id": 324008,
+      "slug": "the-legend-of-zelda-links-awakening-coop",
+      "title": "The Legend of Zelda: Link's Awakening Coop",
+      "year": "TBD"
+    },
+    {
+      "id": 330688,
+      "slug": "the-legend-of-zelda-links-initiation",
+      "title": "The Legend of Zelda: Link's Initiation",
+      "year": "2023"
+    },
+    {
+      "id": 134237,
+      "slug": "the-legend-of-zelda-links-awakening-collectors-edition",
+      "title": "The Legend of Zelda: Link's Awakening - Collector's Edition",
+      "year": "TBD"
+    },
+    {
+      "id": 136334,
+      "slug": "the-legend-of-zelda-links-awakening-dreamer-edition",
+      "title": "The Legend of Zelda: Link's Awakening - Dreamer Edition",
+      "year": "2019",
+      "edition_of": 115284
+    },
+    {
+      "id": 134231,
+      "slug": "the-legend-of-zelda-links-awakening-limited-edition",
+      "title": "The Legend of Zelda: Link's Awakening - Limited Edition",
+      "year": "2019",
+      "edition_of": 115284
+    },
+    {
+      "id": 136899,
+      "slug": "the-legend-of-zelda-links-awakening-artbook-set",
+      "title": "The Legend of Zelda: Link's Awakening - Artbook Set",
+      "year": "2019",
+      "edition_of": 115284
+    },
+    {
+      "id": 3490,
+      "slug": "f-zero",
+      "title": "F-Zero",
+      "year": "1990"
+    },
+    {
+      "id": 3489,
+      "slug": "f-zero-x",
+      "title": "F-Zero X",
+      "year": "1998"
+    },
+    {
+      "id": 266686,
+      "slug": "f-zero-99",
+      "title": "F-Zero 99",
+      "year": "2023"
+    },
+    {
+      "id": 3492,
+      "slug": "f-zero-gx",
+      "title": "F-Zero GX",
+      "year": "2003"
+    },
+    {
+      "id": 20150,
+      "slug": "katana-zero",
+      "title": "Katana Zero",
+      "year": "2019"
+    },
+    {
+      "id": 7317,
+      "slug": "haze",
+      "title": "Haze",
+      "year": "2008"
+    },
+    {
+      "id": 59737,
+      "slug": "zeroranger",
+      "title": "ZeroRanger",
+      "year": "2018"
+    },
+    {
+      "id": 115309,
+      "slug": "suzerain",
+      "title": "Suzerain",
+      "year": "2020"
+    },
+    {
+      "id": 186429,
+      "slug": "zeno",
+      "title": "Zeno",
+      "year": "2021"
+    },
+    {
+      "id": 1775,
+      "slug": "mega-man-zero",
+      "title": "Mega Man Zero",
+      "year": "2002"
+    },
+    {
+      "id": 11196,
+      "slug": "star-fox-zero",
+      "title": "Star Fox Zero",
+      "year": "2016"
+    },
+    {
+      "id": 6360,
+      "slug": "zeno-clash",
+      "title": "Zeno Clash",
+      "year": "2009"
+    },
+    {
+      "id": 6390,
+      "slug": "drill-dozer",
+      "title": "Drill Dozer",
+      "year": "2005"
+    },
+    {
+      "id": 11616,
+      "slug": "soul-blazer",
+      "title": "Soul Blazer",
+      "year": "1992"
+    },
+    {
+      "id": 146042,
+      "slug": "zero-hour--1",
+      "title": "Zero Hour",
+      "year": "2024"
+    },
+    {
+      "id": 127887,
+      "slug": "entropy-zero",
+      "title": "Entropy: Zero",
+      "year": "2017"
+    },
+    {
+      "id": 122523,
+      "slug": "zelle",
+      "title": "Zelle",
+      "year": "2019"
+    },
+    {
+      "id": 1791,
+      "slug": "ratchet-clank-size-matters",
+      "title": "Ratchet & Clank: Size Matters",
+      "year": "2007"
+    },
+    {
+      "id": 229416,
+      "slug": "the-legend-of-zelda-a-link-to-the-past--1",
+      "title": "The Legend of Zelda: A Link to the Past",
+      "year": "2002"
+    },
+    {
+      "id": 6614,
+      "slug": "zero-escape-virtue-s-last-reward",
+      "title": "Zero Escape: Virtue's Last Reward",
+      "year": "2012"
+    },
+    {
+      "id": 163572,
+      "slug": "the-legend-of-zelda-four-swords",
+      "title": "The Legend of Zelda: Four Swords",
+      "year": "2002"
+    },
+    {
+      "id": 11156,
+      "slug": "horizon-zero-dawn",
+      "title": "Horizon Zero Dawn",
+      "year": "2017"
+    },
+    {
+      "id": 1022,
+      "slug": "the-legend-of-zelda",
+      "title": "The Legend of Zelda",
+      "year": "1986"
+    },
+    {
+      "id": 8593,
+      "slug": "the-legend-of-zelda-majoras-mask-3d",
+      "title": "The Legend of Zelda: Majora's Mask 3D",
+      "year": "2015"
+    },
+    {
+      "id": 317103,
+      "slug": "horizon-zero-dawn-remastered",
+      "title": "Horizon Zero Dawn Remastered",
+      "year": "2024"
+    },
+    {
+      "id": 37083,
+      "slug": "horizon-zero-dawn-the-frozen-wilds",
+      "title": "Horizon Zero Dawn: The Frozen Wilds",
+      "year": "2017"
+    },
+    {
+      "id": 970,
+      "slug": "resident-evil-zero",
+      "title": "Resident Evil Zero",
+      "year": "2002"
+    },
+    {
+      "id": 1034,
+      "slug": "the-legend-of-zelda-four-swords-adventures",
+      "title": "The Legend of Zelda: Four Swords Adventures",
+      "year": "2004"
+    },
+    {
+      "id": 306149,
+      "slug": "the-legend-of-zelda-echoes-of-wisdom",
+      "title": "The Legend of Zelda: Echoes of Wisdom",
+      "year": "2024"
+    },
+    {
+      "id": 23322,
+      "slug": "the-legend-of-heroes-trails-from-zero",
+      "title": "The Legend of Heroes: Trails from Zero",
+      "year": "2020"
+    },
+    {
+      "id": 18017,
+      "slug": "the-legend-of-zelda-twilight-princess-hd",
+      "title": "The Legend of Zelda: Twilight Princess HD",
+      "year": "2016"
+    },
+    {
+      "id": 1036,
+      "slug": "the-legend-of-zelda-twilight-princess",
+      "title": "The Legend of Zelda: Twilight Princess",
+      "year": "2006"
+    },
+    {
+      "id": 119388,
+      "slug": "the-legend-of-zelda-tears-of-the-kingdom",
+      "title": "The Legend of Zelda: Tears of the Kingdom",
+      "year": "2023"
+    },
+    {
+      "id": 6452,
+      "slug": "tales-of-zestiria",
+      "title": "Tales of Zestiria",
+      "year": "2015"
+    },
+    {
+      "id": 2923,
+      "slug": "donkey-kong-country-tropical-freeze",
+      "title": "Donkey Kong Country: Tropical Freeze",
+      "year": "2014"
+    },
+    {
+      "id": 75380,
+      "slug": "world-of-warcraft-battle-for-azeroth",
+      "title": "World of Warcraft: Battle for Azeroth",
+      "year": "2018"
+    },
+    {
+      "id": 5614,
+      "slug": "kentucky-route-zero",
+      "title": "Kentucky Route Zero",
+      "year": "2013"
+    },
+    {
+      "id": 1035,
+      "slug": "the-legend-of-zelda-the-minish-cap",
+      "title": "The Legend of Zelda: The Minish Cap",
+      "year": "2004"
+    },
+    {
+      "id": 1032,
+      "slug": "the-legend-of-zelda-oracle-of-seasons",
+      "title": "The Legend of Zelda: Oracle of Seasons",
+      "year": "2001"
+    },
+    {
+      "id": 5168,
+      "slug": "sonic-riders-zero-gravity",
+      "title": "Sonic Riders: Zero Gravity",
+      "year": "2008"
+    },
+    {
+      "id": 143614,
+      "slug": "the-legend-of-zelda-skyward-sword-hd",
+      "title": "The Legend of Zelda: Skyward Sword HD",
+      "year": "2021"
+    },
+    {
+      "id": 11549,
+      "slug": "zero-escape-zero-time-dilemma",
+      "title": "Zero Escape: Zero Time Dilemma",
+      "year": "2016"
+    },
+    {
+      "id": 133,
+      "slug": "warcraft-iii-the-frozen-throne",
+      "title": "Warcraft III: The Frozen Throne",
+      "year": "2003"
+    },
+    {
+      "id": 1029,
+      "slug": "the-legend-of-zelda-ocarina-of-time",
+      "title": "The Legend of Zelda: Ocarina of Time",
+      "year": "1998"
+    },
+    {
+      "id": 534,
+      "slug": "the-legend-of-zelda-skyward-sword",
+      "title": "The Legend of Zelda: Skyward Sword",
+      "year": "2011"
+    },
+    {
+      "id": 1039,
+      "slug": "the-legend-of-zelda-ocarina-of-time-3d",
+      "title": "The Legend of Zelda: Ocarina of Time 3D",
+      "year": "2011"
+    },
+    {
+      "id": 2909,
+      "slug": "the-legend-of-zelda-a-link-between-worlds",
+      "title": "The Legend of Zelda: A Link Between Worlds",
+      "year": "2013"
+    },
+    {
+      "id": 7346,
+      "slug": "the-legend-of-zelda-breath-of-the-wild",
+      "title": "The Legend of Zelda: Breath of the Wild",
+      "year": "2017"
+    },
+    {
+      "id": 41825,
+      "slug": "the-legend-of-zelda-breath-of-the-wild-the-master-trials",
+      "title": "The Legend of Zelda: Breath of the Wild - The Master Trials",
+      "year": "2017"
+    },
+    {
+      "id": 1025,
+      "slug": "zelda-ii-the-adventure-of-link",
+      "title": "Zelda II: The Adventure of Link",
+      "year": "1987"
+    },
+    {
+      "id": 77336,
+      "slug": "the-legend-of-zelda-a-link-to-the-past-and-four-swords",
+      "title": "The Legend of Zelda: A Link to the Past & Four Swords",
+      "year": "2002"
+    },
+    {
+      "id": 1038,
+      "slug": "the-legend-of-zelda-spirit-tracks",
+      "title": "The Legend of Zelda: Spirit Tracks",
+      "year": "2009"
+    },
+    {
+      "id": 1026,
+      "slug": "the-legend-of-zelda-a-link-to-the-past",
+      "title": "The Legend of Zelda: A Link to the Past",
+      "year": "1991"
+    },
+    {
+      "id": 338072,
+      "slug": "the-legend-of-zelda-breath-of-the-wild-nintendo-switch-2-edition",
+      "title": "The Legend of Zelda: Breath of the Wild - Nintendo Switch 2 Edition",
+      "year": "2025"
+    },
+    {
+      "id": 1030,
+      "slug": "the-legend-of-zelda-majora-s-mask",
+      "title": "The Legend of Zelda: Majora's Mask",
+      "year": "2000"
+    },
+    {
+      "id": 45143,
+      "slug": "the-legend-of-zelda-four-swords-anniversary-edition",
+      "title": "The Legend of Zelda: Four Swords - Anniversary Edition",
+      "year": "2011"
+    },
+    {
+      "id": 11194,
+      "slug": "the-legend-of-zelda-tri-force-heroes",
+      "title": "The Legend of Zelda: Tri Force Heroes",
+      "year": "2015"
+    },
+    {
+      "id": 2276,
+      "slug": "the-legend-of-zelda-the-wind-waker-hd",
+      "title": "The Legend of Zelda: The Wind Waker HD",
+      "year": "2013"
+    },
+    {
+      "id": 45142,
+      "slug": "the-legend-of-zelda-ocarina-of-time-master-quest",
+      "title": "The Legend of Zelda: Ocarina of Time - Master Quest",
+      "year": "2002"
+    },
+    {
+      "id": 116419,
+      "slug": "cadence-of-hyrule-crypt-of-the-necrodancer-featuring-the-legend-of-zelda",
+      "title": "Cadence of Hyrule: Crypt of the NecroDancer Featuring the Legend of Zelda",
+      "year": "2019"
+    },
+    {
+      "id": 134014,
+      "slug": "the-legend-of-zelda-twilight-princess--1",
+      "title": "The Legend of Zelda: Twilight Princess",
+      "year": "2006"
+    },
+    {
+      "id": 41826,
+      "slug": "the-legend-of-zelda-breath-of-the-wild-the-champions-ballad",
+      "title": "The Legend of Zelda: Breath of the Wild - The Champions' Ballad",
+      "year": "2017"
+    },
+    {
+      "id": 1037,
+      "slug": "the-legend-of-zelda-phantom-hourglass",
+      "title": "The Legend of Zelda: Phantom Hourglass",
+      "year": "2007"
+    },
+    {
+      "id": 1033,
+      "slug": "the-legend-of-zelda-the-wind-waker",
+      "title": "The Legend of Zelda: The Wind Waker",
+      "year": "2002"
+    },
+    {
+      "id": 45139,
+      "slug": "the-legend-of-zelda-collectors-edition",
+      "title": "The Legend of Zelda: Collector's Edition",
+      "year": "2003"
+    },
+    {
+      "id": 1041,
+      "slug": "the-legend-of-zelda-oracle-of-ages",
+      "title": "The Legend of Zelda: Oracle of Ages",
+      "year": "2001"
+    },
+    {
+      "id": 338073,
+      "slug": "the-legend-of-zelda-tears-of-the-kingdom-nintendo-switch-2-edition",
+      "title": "The Legend of Zelda: Tears of the Kingdom - Nintendo Switch 2 Edition",
+      "year": "2025"
+    },
+    {
+      "id": 41829,
+      "slug": "the-legend-of-zelda-breath-of-the-wild-expansion-pass",
+      "title": "The Legend of Zelda: Breath of the Wild - Expansion Pass",
+      "year": "2017"
+    },
+    {
+      "id": 152362,
+      "slug": "zelda--1",
+      "title": "Zelda",
+      "year": "1989"
+    },
+    {
+      "id": 58782,
+      "slug": "my-nintendo-picross-the-legend-of-zelda-twilight-princess",
+      "title": "My Nintendo Picross: The Legend of Zelda Twilight Princess",
+      "year": "2016"
+    },
+    {
+      "id": 191440,
+      "slug": "the-legend-of-zelda-twilight-princess--2",
+      "title": "The Legend of Zelda: Twilight Princess",
+      "year": "2017"
+    },
+    {
+      "id": 176087,
+      "slug": "the-legend-of-zelda-ocarina-of-time-plus-the-legend-of-zelda-ocarina-of-time-master-quest-two-game-bonus-disc",
+      "title": "The Legend of Zelda: Ocarina of Time + The Legend of Zelda: Ocarina of Time - Master Quest: Two-game Bonus Disc!",
+      "year": "2002"
+    },
+    {
+      "id": 8533,
+      "slug": "zelda-the-wand-of-gamelon",
+      "title": "Zelda: The Wand of Gamelon",
+      "year": "1993"
+    },
+    {
+      "id": 145224,
+      "slug": "zelda",
+      "title": "Zelda",
+      "year": "1989"
+    },
+    {
+      "id": 18066,
+      "slug": "classic-nes-series-the-legend-of-zelda",
+      "title": "Classic NES Series: The Legend of Zelda",
+      "year": "2004"
+    },
+    {
+      "id": 203116,
+      "slug": "the-legend-of-zelda-ocarina-of-time-randomizer",
+      "title": "The Legend of Zelda: Ocarina of Time Randomizer",
+      "year": "2018"
+    },
+    {
+      "id": 195338,
+      "slug": "zelda-2-redux",
+      "title": "Zelda 2 Redux",
+      "year": "2021"
+    },
+    {
+      "id": 8534,
+      "slug": "zeldas-adventure",
+      "title": "Zelda's Adventure",
+      "year": "1996"
+    },
+    {
+      "id": 108750,
+      "slug": "tokimeki-memorial-taisen-puzzle-dama",
+      "title": "Tokimeki Memorial: Taisen Puzzle-Dama",
+      "year": "1995"
+    },
+    {
+      "id": 55725,
+      "slug": "puzzle-dating",
+      "title": "Puzzle Dating",
+      "year": "2017"
+    },
+    {
+      "id": 71701,
+      "slug": "twinbee-taisen-puzzle-dama",
+      "title": "TwinBee Taisen Puzzle-Dama",
+      "year": "1994"
+    },
+    {
+      "id": 108744,
+      "slug": "tokimeki-memorial-2-taisen-puzzle-dama",
+      "title": "Tokimeki Memorial 2: Taisen Puzzle-Dama",
+      "year": "2001"
+    },
+    {
+      "id": 136858,
+      "slug": "susume-taisen-puzzle-dama-toukon-marutama-chou",
+      "title": "Susume! Taisen Puzzle Dama: Toukon! Marutama Chou",
+      "year": "1998"
+    },
+    {
+      "id": 259828,
+      "slug": "puzzle-da-moro",
+      "title": "Puzzle da Moro!",
+      "year": "2001"
+    },
+    {
+      "id": 37778,
+      "slug": "tsuyoshi-shikkari-shinasai-taisen-puzzle-dama",
+      "title": "Tsuyoshi Shikkari Shinasai Taisen Puzzle-dama",
+      "year": "1994"
+    },
+    {
+      "id": 281402,
+      "slug": "popn-taisen-puzzle-dama-online",
+      "title": "Pop'n Taisen Puzzle Dama Online",
+      "year": "2004"
+    },
+    {
+      "id": 92185,
+      "slug": "chibi-maruko-chan-no-taisen-puzzle-dama",
+      "title": "Chibi Maruko-Chan no Taisen Puzzle Dama",
+      "year": "1995"
+    },
+    {
+      "id": 227681,
+      "slug": "douga-de-puzzle-da-puppukupuu",
+      "title": "Douga de Puzzle da! Puppukupuu",
+      "year": "1995"
+    },
+    {
+      "id": 172768,
+      "slug": "crayon-shin-chan-puzzle-daimaou-no-nazo",
+      "title": "Crayon Shin-chan: Puzzle Daimaou no Nazo",
+      "year": "1995"
+    },
+    {
+      "id": 308703,
+      "slug": "loppi-puzzle-magazine-hirameku-puzzle-dai-3-gou",
+      "title": "Loppi Puzzle Magazine: Hirameku Puzzle Dai-3-gou",
+      "year": "2001"
+    },
+    {
+      "id": 160059,
+      "slug": "puzzle-dazzle-3d",
+      "title": "Puzzle Dazzle 3D",
+      "year": "2025"
+    },
+    {
+      "id": 308702,
+      "slug": "loppi-puzzle-magazine-hirameku-puzzle-dai-2-gou",
+      "title": "Loppi Puzzle Magazine: Hirameku Puzzle Dai-2-gou",
+      "year": "2001"
+    },
+    {
+      "id": 282386,
+      "slug": "nisemon-puzzle-da-mon",
+      "title": "Nisemon: Puzzle da Mon!",
+      "year": "2001"
+    },
+    {
+      "id": 45403,
+      "slug": "chibi-maruko-chan-no-taisen-puzzle-dama--1",
+      "title": "Chibi Maruko-Chan no Taisen Puzzle Dama",
+      "year": "TBD"
+    },
+    {
+      "id": 341758,
+      "slug": "dazzle-dash",
+      "title": "Dazzle Dash",
+      "year": "2024"
+    },
+    {
+      "id": 120090,
+      "slug": "bepuzzled-animals-jigsaw-puzzle",
+      "title": "Bepuzzled Animals Jigsaw Puzzle",
+      "year": "2019"
+    },
+    {
+      "id": 215744,
+      "slug": "the-grizzled-armistice-digital",
+      "title": "The Grizzled: Armistice Digital",
+      "year": "TBD"
+    },
+    {
+      "id": 180710,
+      "slug": "frazzle-dazzle",
+      "title": "Frazzle Dazzle",
+      "year": "TBD"
+    },
+    {
+      "id": 357751,
+      "slug": "3d-puzzle-dark-fantasy",
+      "title": "3D Puzzle Dark Fantasy",
+      "year": "2025"
+    }
+  ]
+}

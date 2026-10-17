@@ -1,0 +1,30 @@
+[package]
+name = "backlog-panda-app"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Backlog Panda : application de bureau (coque Tauri autour du cœur Rust)"
+publish = false
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+backlog-panda = { path = ".." }
+tauri = { version = "2", features = [] }
+tauri-plugin-single-instance = "2"
+serde_json = "1"
+
+[features]
+# Intègre l'interface dans l'exécutable (indispensable hors `tauri dev`) : actif par défaut pour que
+# un simple `cargo build --release` donne un .exe autonome.
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+# Exécutable le plus léger possible (RAM et taille).
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

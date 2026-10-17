@@ -1,0 +1,10 @@
+target/
+src-tauri/target/
+src-tauri/gen/
+dist/
+_prior_unverified/
+*.zip
+*.corrompu-*
+erreur.txt
+# Extraits de captures d'un site tiers : gardés en local seulement (les tests concernés s'ignorent s'ils sont absents)
+docs/evidence/

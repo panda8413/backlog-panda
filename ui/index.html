@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Backlog Panda</title>
+  <link rel="stylesheet" href="app.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app">
+    <aside class="rail" aria-label="Navigation">
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+          <circle cx="7.5" cy="7.5" r="4.6" fill="#05060d"/>
+          <circle cx="24.5" cy="7.5" r="4.6" fill="#05060d"/>
+          <ellipse cx="16" cy="18" rx="12.4" ry="11" fill="#f2f3ff"/>
+          <ellipse cx="10.8" cy="17" rx="3.1" ry="4.1" transform="rotate(18 10.8 17)" fill="#05060d"/>
+          <ellipse cx="21.2" cy="17" rx="3.1" ry="4.1" transform="rotate(-18 21.2 17)" fill="#05060d"/>
+          <circle cx="11.3" cy="16.4" r="1.05" fill="#f2f3ff"/>
+          <circle cx="20.7" cy="16.4" r="1.05" fill="#f2f3ff"/>
+          <ellipse cx="16" cy="21.4" rx="2" ry="1.4" fill="#05060d"/>
+        </svg>
+        <span class="brand-name">Backlog Panda</span>
+      </div>
+      <nav class="nav" id="nav"></nav>
+      <button class="conn" id="conn" type="button"></button>
+    </aside>
+
+    <main class="main" id="main">
+      <header class="topbar">
+        <label class="search" for="q">
+          <span id="search-icon"></span>
+          <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Chercher un jeu à ajouter" aria-label="Chercher un jeu">
+          <kbd id="kbd">Ctrl K</kbd>
+        </label>
+      </header>
+      <div class="view" id="view" tabindex="-1"></div>
+    </main>
+
+    <div class="scrim" id="scrim"></div>
+    <div class="sheet" id="drawer" role="dialog" aria-modal="true" aria-label="Fiche du jeu" inert></div>
+  </div>
+  <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+</body>
+</html>
