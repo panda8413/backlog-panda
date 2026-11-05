@@ -205,13 +205,23 @@ struct Filters {
     platform: Option<String>,
     developer: Option<String>,
     min_half: u8,
+    /// Tranche de durée estimée en secondes, `[min, max)` ; `None` = pas de filtre.
+    ttb: Option<(u32, Option<u32>)>,
 }
 
 impl Filters {
     fn from_args(args: &Value) -> Filters {
         let get = |k: &str| args.get(k).and_then(Value::as_str).map(str::trim).filter(|s| !s.is_empty()).map(str::to_string);
         let min = args.get("min_rating").and_then(Value::as_f64).unwrap_or(0.0);
-        Filters { genre: get("genre"), platform: get("platform"), developer: get("developer"), min_half: (min * 2.0).round().clamp(0.0, 10.0) as u8 }
+        const H: u32 = 3600;
+        let ttb = match get("ttb").as_deref() {
+            Some("lt5") => Some((0, Some(5 * H))),
+            Some("5to15") => Some((5 * H, Some(15 * H))),
+            Some("15to40") => Some((15 * H, Some(40 * H))),
+            Some("ge40") => Some((40 * H, None)),
+            _ => None,
+        };
+        Filters { genre: get("genre"), platform: get("platform"), developer: get("developer"), min_half: (min * 2.0).round().clamp(0.0, 10.0) as u8, ttb }
     }
 
     fn keeps(&self, info: &GameInfo, e: &Entry) -> bool {
@@ -219,6 +229,9 @@ impl Filters {
             && self.platform.as_ref().is_none_or(|p| played_on(info, e).contains(p))
             && self.developer.as_ref().is_none_or(|d| info.developers.contains(d))
             && (self.min_half == 0 || e.rating.is_some_and(|r| r.half_stars() >= self.min_half))
+            && self.ttb.is_none_or(|(min, max)| {
+                info.time_to_beat.as_ref().and_then(|t| t.reference()).is_some_and(|d| d >= min && max.is_none_or(|m| d < m))
+            })
     }
 }
 
@@ -676,6 +689,11 @@ impl Service {
             "platform" => rows.sort_by_cached_key(|(g, e)| {
                 let p = e.platform.as_deref().unwrap_or("").to_lowercase();
                 (p.is_empty(), p, g.name.to_lowercase())
+            }),
+            // durée de référence croissante ; les jeux sans durée à la fin, par nom
+            "ttb" => rows.sort_by_cached_key(|(g, _)| {
+                let d = g.time_to_beat.as_ref().and_then(|t| t.reference());
+                (d.is_none(), d, g.name.to_lowercase())
             }),
             "added" => rows.sort_by(|a, b| b.1.added.cmp(&a.1.added).then(b.1.stamp.counter.cmp(&a.1.stamp.counter))),
             "hours" => rows.sort_by(|a, b| b.1.minutes.unwrap_or(0).cmp(&a.1.minutes.unwrap_or(0)).then(b.1.stamp.counter.cmp(&a.1.stamp.counter))),
@@ -1893,6 +1911,59 @@ mod tests {
         assert_eq!(a["hltb_url"], "https://howlongtobeat.com/?q=Hades");
         assert_eq!((b["ttb"].clone(), b["ttb_ref"].clone(), b["ttb_text"].clone()), (Value::Null, Value::Null, Value::Null));
         assert_eq!(b["hltb_url"], "https://howlongtobeat.com/?q=Celeste");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// Bibliothèque de jeux dont la durée de référence (normale) est donnée en secondes.
+    fn service_avec_durees(tag: &str, games: &[(u64, &str, Option<u32>)]) -> (Service, std::path::PathBuf) {
+        let dir = temp_dir(tag);
+        let mut store = crate::store::Store::default();
+        for (id, name, secs) in games {
+            let time_to_beat = secs.map(|s| crate::igdb::TimeToBeat { normally: Some(s), count: 10, ..Default::default() });
+            store.games.insert(*id, GameInfo { id: *id, name: (*name).into(), slug: format!("{name}--{id}"), rev: REV_FULL, time_to_beat, ..GameInfo::default() });
+            store.library.upsert(*id, Status::Backlog, None);
+        }
+        store.save(&dir).unwrap();
+        (Service::open(&dir, FakeTransport::with(vec![])).unwrap(), dir)
+    }
+
+    fn noms(lib: &Value) -> Vec<String> {
+        lib["entries"].as_array().unwrap().iter().map(|e| e["name"].as_str().unwrap().to_string()).collect()
+    }
+
+    #[test]
+    fn tri_par_duree_estimee() {
+        let h = 3600;
+        let (s, dir) = service_avec_durees("tri-ttb", &[(1, "A", Some(20 * h)), (2, "Zelda", None), (3, "C", Some(3 * h)), (4, "Alpha", None)]);
+        let lib = ok(s.call("library", &json!({"sort": "ttb"})));
+        assert_eq!(noms(&lib), ["C", "A", "Alpha", "Zelda"], "sans durée à la fin, par nom");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn filtre_par_tranche_de_duree() {
+        let (h, m) = (3600, 60);
+        let games = [
+            (1, "g1", Some(4 * h + 59 * m)),
+            (2, "g2", Some(5 * h)),
+            (3, "g3", Some(14 * h + 59 * m)),
+            (4, "g4", Some(15 * h)),
+            (5, "g5", Some(39 * h + 59 * m)),
+            (6, "g6", Some(40 * h)),
+            (7, "g7", None),
+        ];
+        let (s, dir) = service_avec_durees("filtre-ttb", &games);
+        let pick = |f: &str| {
+            let mut n = noms(&ok(s.call("library", &json!({"ttb": f, "sort": "name"}))));
+            n.sort();
+            n
+        };
+        assert_eq!(pick("lt5"), ["g1"]);
+        assert_eq!(pick("5to15"), ["g2", "g3"]);
+        assert_eq!(pick("15to40"), ["g4", "g5"]);
+        assert_eq!(pick("ge40"), ["g6"]);
+        assert_eq!(pick("").len(), 7);
+        assert_eq!(pick("nimporte").len(), 7);
         let _ = std::fs::remove_dir_all(&dir);
     }
 
