@@ -3,7 +3,7 @@
 //! L'interface n'appelle que `Service::call(méthode, arguments)` et reçoit du JSON
 //! `{"ok":true,"result":…}` ou `{"ok":false,"error":"…"}`. Méthodes :
 //! `status`, `search`, `library`, `add`, `set_status`, `set_rating`, `set_platform`, `set_comment`,
-//! `remove`, `refresh`, `translate`, `stats`, `get_settings`, `save_settings`, `test_igdb`,
+//! `remove`, `refresh`, `hltb_url`, `translate`, `stats`, `get_settings`, `save_settings`, `test_igdb`,
 //! `sync_metadata`, `export`.
 
 use crate::catalog::{Catalog, Game};
@@ -12,14 +12,14 @@ use crate::csv_import::{self, fold, CsvRow};
 use crate::secrets::Vault;
 use crate::deepl::Translator;
 use crate::error::{Error, Result};
-use crate::igdb::{GameInfo, IgdbClient, Transport, REV_FULL};
-use crate::l10n::{date_fr, duration_fr, parse_duration, tag_fr};
+use crate::igdb::{GameInfo, IgdbClient, TimeToBeat, Transport, REV_FULL};
+use crate::l10n::{date_fr, duration_fr, estimate_fr, parse_duration, tag_fr};
 use crate::library::{Entry, Status};
 use crate::rating::{Histogram, Rating};
 use crate::search::autocomplete;
 use crate::store::{self, Recovery, Store};
 use crate::transfer::{self, ImportMode};
-use crate::text::normalize;
+use crate::text::{normalize, url_encode};
 use serde::Serialize;
 use serde_json::{json, Value};
 use std::collections::HashMap;
@@ -61,6 +61,41 @@ struct EntryView {
     finished: Option<i64>,
 }
 
+/// Durées « time to beat » prêtes à afficher : secondes pour le tri, texte arrondi pour la carte.
+#[derive(Serialize)]
+struct TtbView {
+    hastily: Option<u32>,
+    normally: Option<u32>,
+    completely: Option<u32>,
+    hastily_text: Option<String>,
+    normally_text: Option<String>,
+    completely_text: Option<String>,
+    count: u32,
+    /// Moins de 5 joueurs : la durée est à prendre avec prudence.
+    few_votes: bool,
+}
+
+impl TtbView {
+    fn new(t: &TimeToBeat) -> Self {
+        let text = |v: Option<u32>| v.map(estimate_fr);
+        TtbView {
+            hastily: t.hastily,
+            normally: t.normally,
+            completely: t.completely,
+            hastily_text: text(t.hastily),
+            normally_text: text(t.normally),
+            completely_text: text(t.completely),
+            count: t.count,
+            few_votes: t.count < 5,
+        }
+    }
+}
+
+/// Lien de recherche HowLongToBeat (hôte fixe, nom encodé) pour comparer les durées.
+pub fn hltb_url(name: &str) -> String {
+    format!("https://howlongtobeat.com/?q={}", url_encode(name))
+}
+
 #[derive(Serialize)]
 struct Card {
     id: u64,
@@ -83,6 +118,11 @@ struct Card {
     igdb_rating: Option<f64>,
     /// Niveau de détail : 2 = fiche complète ; moins = à compléter avec IGDB.
     rev: u8,
+    ttb: Option<TtbView>,
+    /// Durée de référence en secondes (normale, sinon rapide, sinon complète).
+    ttb_ref: Option<u32>,
+    ttb_text: Option<String>,
+    hltb_url: String,
     entry: Option<EntryView>,
 }
 
@@ -91,6 +131,7 @@ fn fr_list(v: &[String]) -> Vec<String> {
 }
 
 fn card(info: &GameInfo, entry: Option<&Entry>) -> Card {
+    let ttb_ref = info.time_to_beat.as_ref().and_then(TimeToBeat::reference);
     Card {
         id: info.id,
         name: info.name.clone(),
@@ -111,6 +152,10 @@ fn card(info: &GameInfo, entry: Option<&Entry>) -> Card {
         summary_fr: info.summary_fr.clone(),
         igdb_rating: info.rating,
         rev: info.rev,
+        ttb: info.time_to_beat.as_ref().map(TtbView::new),
+        ttb_ref,
+        ttb_text: ttb_ref.map(estimate_fr),
+        hltb_url: hltb_url(&info.name),
         entry: entry.map(|e| EntryView {
             status: e.status,
             half: e.rating.map(Rating::half_stars),
@@ -130,10 +175,16 @@ fn offline_info(g: &Game) -> GameInfo {
     GameInfo { id: g.id, name: g.title.clone(), slug: g.slug.clone(), year: g.year.parse().ok(), ..GameInfo::default() }
 }
 
-/// Reprend la traduction déjà faite si le résumé n'a pas changé.
-fn keep_translation(old: Option<&GameInfo>, new: &mut GameInfo) {
-    if let Some(old) = old.filter(|o| o.summary == new.summary) {
+/// Reprend ce que la fiche stockée a déjà : la traduction si le résumé n'a pas changé, et les durées
+/// quand la nouvelle fiche n'en a pas (requête des durées échouée) pour ne pas les perdre.
+fn keep_cached(old: Option<&GameInfo>, new: &mut GameInfo) {
+    let Some(old) = old else { return };
+    if old.summary == new.summary {
         new.summary_fr = old.summary_fr.clone();
+    }
+    if new.rev < REV_FULL && old.time_to_beat.is_some() {
+        new.time_to_beat = old.time_to_beat.clone();
+        new.rev = old.rev;
     }
 }
 
@@ -486,6 +537,7 @@ impl Service {
             "set_hours" => self.set_hours(args),
             "set_dates" => self.set_dates(args),
             "refresh" => self.refresh(args),
+            "hltb_url" => self.hltb_url_rpc(args),
             "translate" => self.translate(args),
             "remove" => self.remove(args),
             "stats" => self.stats(),
@@ -547,7 +599,7 @@ impl Service {
         let mut changed = false;
         for g in &mut games {
             let old = st.store.games.get(&g.id);
-            keep_translation(old, g);
+            keep_cached(old, g);
             // un jeu déjà dans la bibliothèque profite de la fiche plus complète reçue
             if old.is_some_and(|o| g.rev > o.rev) {
                 st.store.games.insert(g.id, g.clone());
@@ -716,13 +768,21 @@ impl Service {
         let fresh = client.by_ids(&[id])?.into_iter().find(|g| g.id == id).ok_or(Error::UnknownGame(id))?;
         let mut st = self.lock()?;
         let mut info = fresh;
-        keep_translation(st.store.games.get(&id).or_else(|| st.recent.get(&id)), &mut info);
+        keep_cached(st.store.games.get(&id).or_else(|| st.recent.get(&id)), &mut info);
         if let Some(slot) = st.store.games.get_mut(&id) {
             *slot = info.clone();
             self.persist(&st)?;
         }
         st.recent.insert(id, info.clone());
         Ok(serde_json::to_value(card(&info, st.store.library.get(id)))?)
+    }
+
+    /// Lien HowLongToBeat d'un jeu connu (bibliothèque ou résultats récents).
+    fn hltb_url_rpc(&self, args: &Value) -> Result<Value> {
+        let id = arg_u64(args, "id")?;
+        let st = self.lock()?;
+        let name = st.store.games.get(&id).or_else(|| st.recent.get(&id)).map(|g| g.name.clone()).ok_or(Error::UnknownGame(id))?;
+        Ok(json!({ "url": hltb_url(&name) }))
     }
 
     /// Traduit le résumé en français avec DeepL ; le résultat est gardé (pas de seconde requête).
@@ -960,7 +1020,7 @@ impl Service {
             let games = client.by_ids(chunk)?;
             let mut st = self.lock()?;
             for mut g in games {
-                keep_translation(st.store.games.get(&g.id), &mut g);
+                keep_cached(st.store.games.get(&g.id), &mut g);
                 st.store.games.insert(g.id, g);
                 updated += 1;
             }
@@ -1779,6 +1839,99 @@ mod tests {
         // fiche déjà complète : la synchronisation globale n'a plus rien à faire
         let sync = ok(s.call("sync_metadata", &json!({})));
         assert_eq!((sync["updated"].as_u64(), sync["pending"].as_u64()), (Some(0), Some(0)));
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn url_hltb_encodee() {
+        assert_eq!(hltb_url("Hades"), "https://howlongtobeat.com/?q=Hades");
+        assert_eq!(
+            hltb_url("Ratchet & Clank: \"Rift\" #2 é"),
+            "https://howlongtobeat.com/?q=Ratchet%20%26%20Clank%3A%20%22Rift%22%20%232%20%C3%A9"
+        );
+    }
+
+    #[test]
+    fn carte_avec_durees() {
+        let dir = temp_dir("carte-durees");
+        let mut store = crate::store::Store::default();
+        let ttb = crate::igdb::TimeToBeat { hastily: Some(72000), normally: Some(91200), completely: None, count: 3 };
+        store.games.insert(1, GameInfo { id: 1, name: "Hades".into(), slug: "hades--1".into(), rev: REV_FULL, time_to_beat: Some(ttb), ..GameInfo::default() });
+        store.games.insert(2, GameInfo { id: 2, name: "Celeste".into(), slug: "celeste--2".into(), rev: REV_FULL, ..GameInfo::default() });
+        store.library.upsert(1, Status::Playing, None);
+        store.library.upsert(2, Status::Backlog, None);
+        store.save(&dir).unwrap();
+        let s = Service::open(&dir, FakeTransport::with(vec![])).unwrap();
+        let lib = ok(s.call("library", &json!({})));
+        let find = |id: u64| lib["entries"].as_array().unwrap().iter().find(|e| e["id"] == id).unwrap().clone();
+        let (a, b) = (find(1), find(2));
+        assert_eq!(a["ttb_text"], "~25 h");
+        assert_eq!(a["ttb_ref"], 91200);
+        assert_eq!(a["ttb"]["normally"], 91200);
+        assert_eq!(a["ttb"]["normally_text"], "~25 h");
+        assert_eq!(a["ttb"]["completely"], Value::Null);
+        assert_eq!(a["ttb"]["completely_text"], Value::Null);
+        assert_eq!(a["ttb"]["count"], 3);
+        assert_eq!(a["ttb"]["few_votes"], true);
+        assert_eq!(a["hltb_url"], "https://howlongtobeat.com/?q=Hades");
+        assert_eq!((b["ttb"].clone(), b["ttb_ref"].clone(), b["ttb_text"].clone()), (Value::Null, Value::Null, Value::Null));
+        assert_eq!(b["hltb_url"], "https://howlongtobeat.com/?q=Celeste");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn rpc_hltb_url() {
+        let dir = temp_dir("rpc-hltb");
+        let mut store = crate::store::Store::default();
+        store.games.insert(1, GameInfo { id: 1, name: "Hades II".into(), slug: "hades-ii--1".into(), ..GameInfo::default() });
+        store.library.upsert(1, Status::Playing, None);
+        store.save(&dir).unwrap();
+        let s = Service::open(&dir, FakeTransport::with(vec![])).unwrap();
+        assert_eq!(ok(s.call("hltb_url", &json!({"id": 1})))["url"], "https://howlongtobeat.com/?q=Hades%20II");
+        assert!(s.call("hltb_url", &json!({"id": 999}))["error"].is_string());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn refresh_garde_les_durees_si_la_requete_echoue() {
+        let dir = temp_dir("refresh-durees");
+        let mut store = crate::store::Store::default();
+        let ttb = crate::igdb::TimeToBeat { normally: Some(90000), count: 12, ..Default::default() };
+        let old = GameInfo { id: 1, name: "Hades".into(), slug: "hades--1".into(), rev: REV_FULL, time_to_beat: Some(ttb), ..GameInfo::default() };
+        store.games.insert(1, old);
+        store.library.upsert(1, Status::Playing, None);
+        store.save(&dir).unwrap();
+        let t = FakeTransport::with(vec![Ok(TOKEN_OK.into()), Ok(DETAILED.into()), Err(Error::Network("coupure".into()))]);
+        let s = Service::open(&dir, t).unwrap();
+        s.call("save_settings", &json!({"igdb_client_id": "a", "igdb_client_secret": "b"}));
+        let r = ok(s.call("refresh", &json!({"id": 1})));
+        assert_eq!(r["ttb"]["normally"], 90000, "durées conservées");
+        assert_eq!(r["rev"], 3);
+        assert_eq!(r["developers"][0], "Supergiant Games", "le reste de la fiche est bien rafraîchi");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn sync_complete_les_fiches_rev2_seulement() {
+        let dir = temp_dir("sync-rev2");
+        let mut store = crate::store::Store::default();
+        store.games.insert(1, GameInfo { id: 1, name: "Hades".into(), slug: "hades--1".into(), rev: 2, ..GameInfo::default() });
+        store.games.insert(2, GameInfo { id: 2, name: "Celeste".into(), slug: "celeste--2".into(), rev: REV_FULL, ..GameInfo::default() });
+        store.library.upsert(1, Status::Playing, None);
+        store.library.upsert(2, Status::Backlog, None);
+        store.save(&dir).unwrap();
+        let only_a = r#"[{"id":1,"name":"Hades","slug":"hades--1"}]"#;
+        let t = FakeTransport::with(vec![Ok(TOKEN_OK.into()), Ok(only_a.into()), Ok("[]".into())]);
+        let s = Service::open(&dir, t.clone()).unwrap();
+        s.call("save_settings", &json!({"igdb_client_id": "a", "igdb_client_secret": "b"}));
+        let sync = ok(s.call("sync_metadata", &json!({})));
+        assert_eq!((sync["updated"].as_u64(), sync["pending"].as_u64()), (Some(1), Some(0)));
+        let calls = t.calls();
+        assert_eq!(calls.len(), 3, "jeton, fiches, durées");
+        assert!(calls[1].2.contains("where id = (1);"), "seul le jeu en rev 2 est demandé : {}", calls[1].2);
+        let again = ok(s.call("sync_metadata", &json!({})));
+        assert_eq!(again["updated"], 0);
+        assert_eq!(t.calls().len(), 3, "aucun appel réseau au second passage");
         let _ = std::fs::remove_dir_all(&dir);
     }
 
