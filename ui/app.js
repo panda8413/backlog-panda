@@ -48,6 +48,7 @@
     ['name', 'Nom'],
     ['year', 'Année de sortie'],
     ['hours', 'Temps de jeu'],
+    ['ttb', 'Durée estimée'],
     ['added', 'Date d’ajout'],
     ['platform', 'Plateforme'],
   ];
@@ -76,7 +77,7 @@
     settings: null,
     open: null,
     cards: new Map(),
-    filters: { genre: '', platform: '', developer: '', min: 0 },
+    filters: { genre: '', platform: '', developer: '', min: 0, ttb: '' },
     facets: { genres: [], platforms: [], developers: [] },
     total: 0,
     dirty: false,
@@ -272,7 +273,9 @@
     if (c.entry && c.entry.comment) cover.append(h('span', { class: 'has-note', title: 'Commentaire écrit' }, icon('note', 14, true)));
     const tilt = h('div', { class: 'tilt' }, cover);
     const where = (c.entry && c.entry.platform) || (c.platforms && c.platforms[0]);
-    const sub = [c.year, where, c.entry && c.entry.hours_text].filter(Boolean).join('  ');
+    const mine = c.entry && c.entry.hours_text;
+    const time = mine && c.ttb_text ? `${mine} / ${c.ttb_text}` : c.ttb_text || mine;
+    const sub = [c.year, where, time].filter(Boolean).join('  ');
     const hit = h('button', { class: 'hit', type: 'button', 'aria-label': `Ouvrir ${c.name}`, onclick: () => openGame(c.id) },
       tilt,
       h('div', { class: 'meta' }, h('span', { class: 'name', text: c.name }), sub ? h('span', { class: 'sub', text: sub }) : null));
@@ -384,6 +387,8 @@
     c.entry = r.entry;
     input.value = r.entry.hours_text || '';
     state.dirty = true;
+    const old = $('#ttb-compare');
+    if (old) old.replaceWith(compareEl(c));
   }
   /** `patch` : { added } et/ou { finished }, en secondes Unix ou null pour effacer. */
   async function setDates(c, patch) {
@@ -405,7 +410,7 @@
   }
   /** Complète une fiche ancienne (sans studio, éditeur…) depuis IGDB, une seule fois par session. */
   async function enrich(c) {
-    if (state.mode !== 'igdb' || c.rev >= 2 || refreshed.has(c.id)) return;
+    if (state.mode !== 'igdb' || c.rev >= 3 || refreshed.has(c.id)) return;
     refreshed.add(c.id);
     enrichingId = c.id;
     if (state.open && state.open.id === c.id) sheet();
@@ -426,7 +431,7 @@
 
   function activeFilters() {
     const f = state.filters;
-    return Boolean(f.genre || f.platform || f.developer || f.min);
+    return Boolean(f.genre || f.platform || f.developer || f.min || f.ttb);
   }
 
   async function loadLibrary() {
@@ -437,6 +442,7 @@
     if (f.platform) args.platform = f.platform;
     if (f.developer) args.developer = f.developer;
     if (f.min) args.min_rating = f.min;
+    if (f.ttb) args.ttb = f.ttb;
     state.lib = await rpc('library', args);
     state.facets = state.lib.facets;
     state.total = state.lib.total;
@@ -510,6 +516,8 @@
       h('button', { class: 'btn primary', type: 'button', onclick: () => $('#q').focus() }, icon('search', 18), 'Chercher un jeu'));
   }
 
+  const TTB_BANDS = [['lt5', 'Moins de 5 h'], ['5to15', '5 à 15 h'], ['15to40', '15 à 40 h'], ['ge40', 'Plus de 40 h']];
+
   function filterSelect(label, all, key, options) {
     const cur = state.filters[key];
     const known = options.some((o) => o.name === cur);
@@ -533,14 +541,22 @@
         onchange: async (e) => { state.filters.min = Number(e.target.value); await loadLibrary(); render(true); },
       }, h('option', { value: '0', text: 'Toute note' }),
         [4.5, 4, 3.5, 3, 2].map((v) => h('option', { value: String(v), selected: f.min === v, text: `${fmt(v)} étoiles et plus` }))));
+    const ttbSel = h('label', { class: 'flt' + (f.ttb ? ' on' : '') },
+      h('span', { class: 'sr', text: 'Durée' }),
+      h('select', {
+        'aria-label': 'Durée',
+        onchange: async (e) => { state.filters.ttb = e.target.value; await loadLibrary(); render(true); },
+      }, h('option', { value: '', text: 'Toutes les durées' }),
+        TTB_BANDS.map(([v, t]) => h('option', { value: v, selected: f.ttb === v, text: t }))));
     return h('div', { class: 'filters', role: 'group', 'aria-label': 'Filtres' },
       filterSelect('Genre', 'Tous les genres', 'genre', fc.genres),
       filterSelect('Plateforme', 'Toutes les plateformes', 'platform', fc.platforms),
       filterSelect('Studio', 'Tous les studios', 'developer', fc.developers),
       minSel,
+      ttbSel,
       activeFilters() ? h('button', {
         class: 'btn quiet small', type: 'button',
-        onclick: async () => { state.filters = { genre: '', platform: '', developer: '', min: 0 }; await loadLibrary(); render(true); },
+        onclick: async () => { state.filters = { genre: '', platform: '', developer: '', min: 0, ttb: '' }; await loadLibrary(); render(true); },
       }, 'Réinitialiser') : null);
   }
 
@@ -1291,6 +1307,48 @@
     return h('div', { class: 'field' }, h('label', { class: 'label', for: 'f-platform', text: 'Je joue sur' }), sel);
   }
 
+  /** Bloc « Temps pour finir » : durées IGDB (rapide, normal, complet). */
+  function ttbBlock(c) {
+    const t = c.ttb;
+    const col = (label, text) => h('div', { class: 'ttb-col' }, h('span', { class: 'ttb-l', text: label }), h('span', { class: 'ttb-v', text: text || '–' }));
+    const open = (e) => {
+      if (!tauri) return; // navigateur : le lien s’ouvre dans un nouvel onglet
+      e.preventDefault();
+      tauri.invoke('open_hltb', { id: c.id }).catch(() => {});
+    };
+    return h('section', { class: 'ttb', 'aria-labelledby': 'ttb-title' },
+      h('h3', { id: 'ttb-title', text: 'Temps pour finir' }),
+      t ? [
+        h('div', { class: 'ttb-cols' }, col('Rapide', t.hastily_text), col('Normal', t.normally_text), col('Complet', t.completely_text)),
+        h('p', { class: 'ttb-src', text: `d’après ${t.count} joueur${t.count > 1 ? 's' : ''} (IGDB)${t.few_votes ? ', peu de votes' : ''}` }),
+      ] : h('p', { class: 'ttb-src', text: 'Pas de durée connue sur IGDB' }),
+      h('a', { class: 'link', href: c.hltb_url, target: '_blank', rel: 'noopener noreferrer', onclick: open, text: 'Comparer sur HowLongToBeat' }));
+  }
+
+  /** Compare le temps joué à la durée normale IGDB (barre + phrase). */
+  function compareEl(c) {
+    const box = h('div', { id: 'ttb-compare', class: 'compare' });
+    const mins = c.entry && c.entry.minutes;
+    const t = c.ttb;
+    if (!mins || !c.ttb_ref || !t) return box;
+    const mine = mins * 60;
+    const over = t.completely != null && mine > t.completely;
+    const max = Math.max(t.completely || 0, c.ttb_ref, mine);
+    const pos = (v) => Math.min(100, (v / max) * 100) + '%';
+    const sentence = over
+      ? `${c.entry.hours_text}, au-delà du temps complet (${t.completely_text})`
+      : `${c.entry.hours_text}, soit ~${fmt(Math.round((mine / c.ttb_ref) * 100))} % du temps normal`;
+    const marks = [['Rapide', t.hastily], ['Normal', t.normally], ['Complet', t.completely]]
+      .filter(([, v]) => v != null)
+      .map(([l, v]) => h('i', { class: 'mark', title: l, vars: { '--x': pos(v) } }));
+    box.append(
+      h('div', { class: 'bar', role: 'img', 'aria-label': sentence },
+        h('span', { class: 'bar-fill', vars: { '--x': pos(mine) } }), marks,
+        h('b', { class: 'bar-me', vars: { '--x': pos(mine) } })),
+      h('p', { class: 'compare-t', 'aria-hidden': 'true', text: sentence }));
+    return box;
+  }
+
   function hoursField(c) {
     const input = h('input', {
       id: 'f-hours', type: 'text', inputmode: 'decimal', autocomplete: 'off', spellcheck: 'false',
@@ -1415,6 +1473,7 @@
         platformField(c),
         hoursField(c),
         h('div', { class: 'field' }, h('span', { class: 'label', text: 'Ma note' }), rating)) : null,
+      inLib ? compareEl(c) : null,
       inLib ? datesField(c) : null,
       inLib ? commentField(c) : null,
       summaryField(c),
@@ -1425,7 +1484,7 @@
             class: 'pill', type: 'button', vars: { '--c': `var(--st-${s.key})` }, onclick: () => add(c, s.key),
           }, h('span', { class: 'd' }), s.label))),
             h('button', { class: 'btn primary', type: 'button', onclick: () => add(c, 'backlog') }, icon('plus', 17), 'Ajouter au backlog')]));
-    const aside = h('aside', { class: 'sheet-aside' }, coverEl(c), facts, hint);
+    const aside = h('aside', { class: 'sheet-aside' }, coverEl(c), facts, hint, state.mode === 'igdb' ? ttbBlock(c) : null);
     const oldHours = $('#f-hours');
     const hoursTyped = oldHours && document.activeElement === oldHours ? { v: oldHours.value, a: oldHours.selectionStart, b: oldHours.selectionEnd } : null;
     const oldArea = $('#f-comment');
