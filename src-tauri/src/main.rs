@@ -7,9 +7,10 @@
 use backlog_panda::igdb::UreqTransport;
 use backlog_panda::service::Service;
 use backlog_panda::store::default_data_dir;
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::sync::Arc;
-use tauri::{Manager, State};
+use tauri::{AppHandle, Manager, State};
+use tauri_plugin_opener::OpenerExt;
 
 struct Core(Arc<Service>);
 
@@ -17,6 +18,25 @@ struct Core(Arc<Service>);
 #[tauri::command(async)]
 fn rpc(core: State<'_, Core>, method: String, args: Option<Value>) -> Value {
     core.0.call(&method, &args.unwrap_or(Value::Null))
+}
+
+/// Ouvre la recherche HowLongToBeat d'un jeu dans le navigateur par défaut. L'URL vient du cœur
+/// (`hltb_url`), l'hôte est revérifié ici, et l'ouverture se fait côté Rust : aucune permission
+/// `opener:*` n'est donnée à l'interface.
+#[tauri::command(async)]
+fn open_hltb(app: AppHandle, core: State<'_, Core>, id: u64) -> Value {
+    let res = core.0.call("hltb_url", &json!({ "id": id }));
+    if res.get("ok").and_then(Value::as_bool) != Some(true) {
+        return res;
+    }
+    let url = res.pointer("/result/url").and_then(Value::as_str).unwrap_or("");
+    if !url.starts_with("https://howlongtobeat.com/") {
+        return json!({ "ok": false, "error": "Lien HowLongToBeat invalide." });
+    }
+    match app.opener().open_url(url, None::<&str>) {
+        Ok(()) => json!({ "ok": true }),
+        Err(e) => json!({ "ok": false, "error": e.to_string() }),
+    }
 }
 
 fn main() {
@@ -32,8 +52,9 @@ fn main() {
                 let _ = w.set_focus();
             }
         }))
+        .plugin(tauri_plugin_opener::init())
         .manage(Core(Arc::new(service)))
-        .invoke_handler(tauri::generate_handler![rpc])
+        .invoke_handler(tauri::generate_handler![rpc, open_hltb])
         .run(tauri::generate_context!())
         .unwrap_or_else(|e| fatal(&e.to_string()));
 }
