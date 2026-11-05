@@ -12,7 +12,7 @@ use crate::csv_import::{self, fold, CsvRow};
 use crate::secrets::Vault;
 use crate::deepl::Translator;
 use crate::error::{Error, Result};
-use crate::igdb::{GameInfo, IgdbClient, TimeToBeat, Transport, REV_FULL};
+use crate::igdb::{GameInfo, IgdbClient, TimeToBeat, Transport, REV_DETAILS, REV_FULL};
 use crate::l10n::{date_fr, duration_fr, estimate_fr, parse_duration, tag_fr};
 use crate::library::{Entry, Status};
 use crate::rating::{Histogram, Rating};
@@ -116,7 +116,7 @@ struct Card {
     summary: Option<String>,
     summary_fr: Option<String>,
     igdb_rating: Option<f64>,
-    /// Niveau de détail : 2 = fiche complète ; moins = à compléter avec IGDB.
+    /// Niveau de détail : 3 = fiche complète avec durées ; 2 = détaillée sans durées ; moins = à compléter avec IGDB.
     rev: u8,
     ttb: Option<TtbView>,
     /// Durée de référence en secondes (normale, sinon rapide, sinon complète).
@@ -176,13 +176,15 @@ fn offline_info(g: &Game) -> GameInfo {
 }
 
 /// Reprend ce que la fiche stockée a déjà : la traduction si le résumé n'a pas changé, et les durées
-/// quand la nouvelle fiche n'en a pas (requête des durées échouée) pour ne pas les perdre.
+/// quand la nouvelle fiche est détaillée mais sans durées (`rev == REV_DETAILS` : requête des durées
+/// échouée) pour ne pas les perdre. Une fiche plus pauvre (`rev < REV_DETAILS`) garde son niveau, pour
+/// que l'interface sache qu'elle reste à compléter ; une fiche `REV_FULL` fait foi.
 fn keep_cached(old: Option<&GameInfo>, new: &mut GameInfo) {
     let Some(old) = old else { return };
     if old.summary == new.summary {
         new.summary_fr = old.summary_fr.clone();
     }
-    if new.rev < REV_FULL && old.time_to_beat.is_some() {
+    if new.rev == REV_DETAILS && old.time_to_beat.is_some() {
         new.time_to_beat = old.time_to_beat.clone();
         new.rev = old.rev;
     }
@@ -1840,6 +1842,21 @@ mod tests {
         let sync = ok(s.call("sync_metadata", &json!({})));
         assert_eq!((sync["updated"].as_u64(), sync["pending"].as_u64()), (Some(0), Some(0)));
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn keep_cached_ne_reprend_les_durees_que_pour_une_fiche_detaillee() {
+        let ttb = crate::igdb::TimeToBeat { normally: Some(90000), count: 12, ..Default::default() };
+        let old = GameInfo { id: 1, name: "Hades".into(), rev: REV_FULL, time_to_beat: Some(ttb.clone()), ..GameInfo::default() };
+        let mut n2 = GameInfo { id: 1, name: "Hades".into(), rev: 2, ..GameInfo::default() };
+        keep_cached(Some(&old), &mut n2);
+        assert_eq!((n2.rev, n2.time_to_beat), (REV_FULL, Some(ttb)));
+        let mut n1 = GameInfo { id: 1, name: "Hades".into(), rev: 1, ..GameInfo::default() };
+        keep_cached(Some(&old), &mut n1);
+        assert_eq!((n1.rev, n1.time_to_beat), (1, None));
+        let mut n3 = GameInfo { id: 1, name: "Hades".into(), rev: REV_FULL, ..GameInfo::default() };
+        keep_cached(Some(&old), &mut n3);
+        assert_eq!((n3.rev, n3.time_to_beat), (REV_FULL, None));
     }
 
     #[test]
