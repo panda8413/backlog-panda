@@ -92,6 +92,22 @@ pub fn duration_fr(minutes: u32) -> String {
     }
 }
 
+/// Durée estimée affichée avec un préfixe « ~ » : `< 30 min` → `~30 min` ; `< 10 h` → demi-heure la
+/// plus proche (`~4 h 30`) ; `≥ 10 h` → heure la plus proche (`~25 h`). Les moitiés arrondissent vers le haut.
+pub fn estimate_fr(secs: u32) -> String {
+    let secs = u64::from(secs);
+    let minutes = if secs < 30 * 60 {
+        30
+    } else if secs < 10 * 3600 {
+        // Demi-heure la plus proche : 1800 s par pas, moitiés vers le haut.
+        ((secs + 900) / 1800 * 30) as u32
+    } else {
+        // Heure la plus proche : 3600 s par pas, moitiés vers le haut.
+        ((secs + 1800) / 3600 * 60) as u32
+    };
+    format!("~{}", duration_fr(minutes))
+}
+
 /// Lit une durée saisie à la main : `12`, `12,5`, `12.5`, `12h`, `12h30`, `12 h 30`, `1:30`, `45 min`.
 /// Renvoie des minutes, ou `None` si le texte est vide. Erreur si illisible ou démesuré.
 pub fn parse_duration(text: &str) -> Result<Option<u32>, String> {
@@ -149,6 +165,17 @@ mod tests {
         for bad in ["abc", "-3", "12h75", "100000", "1e9", "NaN", "h-"] {
             assert!(parse_duration(bad).is_err(), "{bad}");
         }
+    }
+
+    #[test]
+    fn durees_estimees() {
+        assert_eq!(estimate_fr(29 * 60), "~30 min");
+        assert_eq!(estimate_fr(60), "~30 min");
+        assert_eq!(estimate_fr(4 * 3600 + 20 * 60), "~4 h 30");
+        assert_eq!(estimate_fr(2 * 3600 + 10 * 60), "~2 h");
+        assert_eq!(estimate_fr(9 * 3600 + 50 * 60), "~10 h");
+        assert_eq!(estimate_fr(25 * 3600 + 20 * 60), "~25 h");
+        assert_eq!(estimate_fr(25 * 3600 + 30 * 60), "~26 h");
     }
 
     #[test]
