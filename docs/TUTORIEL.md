@@ -33,8 +33,8 @@ Une clé **DeepL API Free** (<https://www.deepl.com/pro-api>) permet de traduire
 ## 3. Utiliser l'application
 
 - **Rechercher** (onglet Rechercher ou `Ctrl + K`) : tape un titre, puis ajoute le jeu avec un statut : Backlog, En cours, Terminé, Joué, Abandonné ou Envie.
-- **Bibliothèque** : filtre par statut, genre, plateforme, studio, note minimale ; trie par dernière modification, note, nom, année, temps de jeu, date d'ajout ou plateforme.
-- **Fiche d'un jeu** (clic sur la jaquette) : statut, plateforme jouée, note en demi-étoiles, temps de jeu (`12h30`, `12,5`, `45 min`), dates d'ajout et de fin, commentaire (enregistré tout seul).
+- **Bibliothèque** : filtre par statut, genre, plateforme, studio, note minimale, durée estimée (moins de 5 h, 5 à 15 h, 15 à 40 h, plus de 40 h) ; trie par dernière modification, note, nom, année, temps de jeu, durée estimée, date d'ajout ou plateforme.
+- **Fiche d'un jeu** (clic sur la jaquette) : statut, plateforme jouée, note en demi-étoiles, temps de jeu (`12h30`, `12,5`, `45 min`), dates d'ajout et de fin, commentaire (enregistré tout seul). Avec IGDB, la fiche affiche aussi « Temps pour finir » (rapide, normal, complet, d'après les joueurs IGDB ; « peu de votes » veut dire moins de 5 joueurs), le lien « Comparer sur HowLongToBeat », et, si tu as renseigné ton temps de jeu, où tu en es par rapport au temps normal.
 - **Statistiques** : temps total, taux de finition, notes, ancienneté du backlog, jeux terminés par année, répartitions.
 
 ## 4. Sauvegarder, exporter, importer

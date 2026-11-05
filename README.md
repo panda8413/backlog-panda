@@ -9,7 +9,7 @@ Application Windows (gratuite, sans compte) pour suivre ton backlog de jeux vid�
 Application de bureau pour suivre son backlog de jeux vidéo : jaquettes, statuts (backlog, en cours, terminé, joué, abandonné, envie), notes en demi-étoiles, recherche. Données stockées **sur ton ordinateur**, dans un fichier.
 
 - **Cœur en Rust** : recherche, statuts, notes, stockage, appels réseau (`src/`). L'interface (`ui/`, HTML/CSS/JS sans dépendance) ne fait qu'afficher.
-- **Source des jeux** : l'API IGDB (clés Twitch gratuites, à saisir dans *Réglages* ou via les variables `IGDB_CLIENT_ID` / `IGDB_CLIENT_SECRET`). Une clé **DeepL** facultative (*Réglages* ou `DEEPL_API_KEY`) permet de traduire les résumés en français ; sans elle, genres, thèmes et modes de jeu sont tout de même traduits localement. Sans clés, un catalogue hors ligne de 162 jeux (sans jaquettes) permet d'essayer l'application.
+- **Source des jeux** : l'API IGDB (clés Twitch gratuites, à saisir dans *Réglages* ou via les variables `IGDB_CLIENT_ID` / `IGDB_CLIENT_SECRET`). Une clé **DeepL** facultative (*Réglages* ou `DEEPL_API_KEY`) permet de traduire les résumés en français ; sans elle, genres, thèmes et modes de jeu sont tout de même traduits localement. Les durées « Temps pour finir » (rapide, normal, complet) viennent aussi d'IGDB, rien n'est lu ailleurs ; « peu de votes » signale une durée tirée de moins de 5 joueurs, à prendre avec prudence, et un lien ouvre la page HowLongToBeat du jeu pour comparer. Sans clés, un catalogue hors ligne de 162 jeux (sans jaquettes) permet d'essayer l'application.
 - **Deux enveloppes, même moteur** : une fenêtre native Tauri (`src-tauri/`) ou un serveur local ouvert dans le navigateur (`backlog-panda app`).
 - Modélisée au départ sur le comportement **observé** de backloggd.com (voir `docs/REPORT.md`) ; l'application ne contacte jamais Backloggd.
 
@@ -20,7 +20,7 @@ Prérequis Windows : Rust (rustup) **et** les « Outils de build Visual Studio �
 ```
 cargo run                               # ouvre l'application dans ton navigateur
 cargo run -- app --demo                 # avec quelques jeux d'exemple (dossier temporaire)
-cargo test                              # 151 tests
+cargo test                              # 164 tests
 ```
 
 Fenêtre native (Tauri 2, WebView2 déjà présent sur Windows 11) :
