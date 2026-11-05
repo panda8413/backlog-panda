@@ -1314,7 +1314,10 @@
     const open = (e) => {
       if (!tauri) return; // navigateur : le lien s’ouvre dans un nouvel onglet
       e.preventDefault();
-      tauri.invoke('open_hltb', { id: c.id }).catch(() => {});
+      const fail = (why) => toast('Impossible d’ouvrir HowLongToBeat' + (why ? ` (${why})` : ''));
+      tauri.invoke('open_hltb', { id: c.id })
+        .then((r) => { if (r && r.ok === false) fail(r.error); })
+        .catch((err) => fail(err && err.message ? err.message : err));
     };
     return h('section', { class: 'ttb', 'aria-labelledby': 'ttb-title' },
       h('h3', { id: 'ttb-title', text: 'Temps pour finir' }),
@@ -1327,7 +1330,7 @@
 
   /** Compare le temps joué à la durée normale IGDB (barre + phrase). */
   function compareEl(c) {
-    const box = h('div', { id: 'ttb-compare', class: 'compare' });
+    const box = h('div', { id: 'ttb-compare', class: 'ttb-compare' });
     const mins = c.entry && c.entry.minutes;
     const t = c.ttb;
     if (!mins || !c.ttb_ref || !t) return box;
@@ -1340,12 +1343,12 @@
       : `${c.entry.hours_text}, soit ~${fmt(Math.round((mine / c.ttb_ref) * 100))} % du temps normal`;
     const marks = [['Rapide', t.hastily], ['Normal', t.normally], ['Complet', t.completely]]
       .filter(([, v]) => v != null)
-      .map(([l, v]) => h('i', { class: 'mark', title: l, vars: { '--x': pos(v) } }));
+      .map(([l, v]) => h('i', { class: 'ttb-mark', title: l, vars: { '--x': pos(v) } }));
     box.append(
-      h('div', { class: 'bar', role: 'img', 'aria-label': sentence },
-        h('span', { class: 'bar-fill', vars: { '--x': pos(mine) } }), marks,
-        h('b', { class: 'bar-me', vars: { '--x': pos(mine) } })),
-      h('p', { class: 'compare-t', 'aria-hidden': 'true', text: sentence }));
+      h('div', { class: 'ttb-bar', role: 'img', 'aria-label': sentence },
+        h('span', { class: 'ttb-bar-fill', vars: { '--x': pos(mine) } }), marks,
+        h('b', { class: 'ttb-me', vars: { '--x': pos(mine) } })),
+      h('p', { class: 'ttb-compare-t', 'aria-hidden': 'true', text: sentence }));
     return box;
   }
 

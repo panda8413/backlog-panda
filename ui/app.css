@@ -822,10 +822,10 @@ h2.section .n { font: 500 14px var(--font-ui); color: var(--faint); letter-spaci
 .ttb-v { font-size: 16px; font-weight: 650; color: var(--text); white-space: nowrap; }
 .ttb-src { margin: 0; font-size: 12.5px; color: var(--faint); }
 .ttb .link { align-self: flex-start; }
-.compare:empty { display: none; }
-.compare { display: flex; flex-direction: column; gap: 8px; margin-top: -10px; }
-.bar { position: relative; height: 8px; border-radius: 4px; background: rgba(180, 190, 255, 0.14); }
-.bar-fill { position: absolute; inset: 0 auto 0 0; width: var(--x); border-radius: 4px; background: var(--st-playing); }
-.bar .mark { position: absolute; top: -3px; bottom: -3px; left: var(--x); width: 2px; margin-left: -1px; background: var(--dim); opacity: 0.75; }
-.bar-me { position: absolute; top: 50%; left: var(--x); width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--text); border: 3px solid var(--st-playing); }
-.compare-t { margin: 0; font-size: 13px; color: var(--dim); }
+.ttb-compare:empty { display: none; }
+.ttb-compare { display: flex; flex-direction: column; gap: 8px; margin-top: -10px; }
+.ttb-bar { position: relative; height: 8px; border-radius: 4px; background: rgba(180, 190, 255, 0.14); }
+.ttb-bar-fill { position: absolute; inset: 0 auto 0 0; width: var(--x); border-radius: 4px; background: var(--st-playing); }
+.ttb-bar .ttb-mark { position: absolute; top: -3px; bottom: -3px; left: var(--x); width: 2px; margin-left: -1px; background: var(--dim); opacity: 0.75; }
+.ttb-me { position: absolute; top: 50%; left: var(--x); width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--text); border: 3px solid var(--st-playing); }
+.ttb-compare-t { margin: 0; font-size: 13px; color: var(--dim); }
