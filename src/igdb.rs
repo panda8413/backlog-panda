@@ -15,6 +15,7 @@ use crate::error::{Error, Result};
 use crate::text::url_encode;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
@@ -77,6 +78,23 @@ impl Transport for UreqTransport {
     }
 }
 
+/// Durées « time to beat » d'IGDB, en secondes (`None` = inconnue).
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct TimeToBeat {
+    pub hastily: Option<u32>,
+    pub normally: Option<u32>,
+    pub completely: Option<u32>,
+    /// Nombre de joueurs ayant soumis une durée.
+    pub count: u32,
+}
+
+impl TimeToBeat {
+    /// Durée de référence : normale, sinon rapide, sinon complète.
+    pub fn reference(&self) -> Option<u32> {
+        self.normally.or(self.hastily).or(self.completely)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct GameInfo {
     pub id: u64,
@@ -118,9 +136,13 @@ pub struct GameInfo {
     /// Traduction française du résumé (DeepL), mise en cache localement.
     #[serde(default)]
     pub summary_fr: Option<String>,
-    /// Niveau de détail de la fiche : 0 = hors ligne, 1 = champs de base, 2 = fiche détaillée.
+    /// Niveau de détail de la fiche : 0 = hors ligne, 1 = champs de base, 2 = fiche détaillée,
+    /// 3 = fiche détaillée avec durées demandées.
     #[serde(default)]
     pub rev: u8,
+    /// Durées de jeu IGDB ; `None` si inconnues ou pas encore demandées.
+    #[serde(default)]
+    pub time_to_beat: Option<TimeToBeat>,
 }
 
 fn yes() -> bool {
@@ -149,12 +171,16 @@ impl Default for GameInfo {
             franchise: None,
             summary_fr: None,
             rev: 0,
+            time_to_beat: None,
         }
     }
 }
 
-/// Niveau de détail d'une fiche reçue avec tous les champs.
-pub const REV_FULL: u8 = 2;
+/// Niveau de détail d'une fiche reçue avec tous les champs, sans les durées.
+pub const REV_DETAILS: u8 = 2;
+/// Fiche détaillée dont les durées ont été demandées (présentes ou non).
+pub const REV_FULL: u8 = 3;
+pub const TTB_URL: &str = "https://api.igdb.com/v4/game_time_to_beats";
 
 impl GameInfo {
     /// `size` : `cover_small`, `cover_big`, `cover_big_2x`… (liste IGDB). Seuls `[a-z0-9_]` sont acceptés.
@@ -250,6 +276,26 @@ pub fn parse_games(json: &str) -> Result<Vec<GameInfo>> {
             franchise: g.get("franchises").map(genre_names).and_then(|f| f.into_iter().next()),
             summary_fr: None,
             rev: 0,
+            time_to_beat: None,
+        });
+    }
+    Ok(out)
+}
+
+/// Lit la réponse JSON de `POST /v4/game_time_to_beats`, indexée par `game_id`.
+/// Valeurs nulles ou absentes → `None` ; entrées sans `game_id` ignorées ; doublon : la première gagne.
+pub fn parse_time_to_beats(json: &str) -> Result<HashMap<u64, TimeToBeat>> {
+    let root: Value = serde_json::from_str(json)?;
+    let items = root.as_array().ok_or_else(|| Error::Parse("réponse IGDB : tableau attendu".into()))?;
+    let secs = |e: &Value, k: &str| e.get(k).and_then(Value::as_u64).filter(|&v| v > 0).map(|v| v.min(u32::MAX as u64) as u32);
+    let mut out = HashMap::new();
+    for e in items {
+        let Some(game_id) = e.get("game_id").and_then(Value::as_u64) else { continue };
+        out.entry(game_id).or_insert_with(|| TimeToBeat {
+            hastily: secs(e, "hastily"),
+            normally: secs(e, "normally"),
+            completely: secs(e, "completely"),
+            count: e.get("count").and_then(Value::as_u64).map_or(0, |c| c.min(u32::MAX as u64) as u32),
         });
     }
     Ok(out)
@@ -338,6 +384,10 @@ impl IgdbClient {
     }
 
     fn post_games(&self, apicalypse: &str) -> Result<String> {
+        self.post_to(GAMES_URL, apicalypse)
+    }
+
+    fn post_to(&self, url: &str, apicalypse: &str) -> Result<String> {
         if self.client_id.is_empty() || self.client_secret.is_empty() {
             return Err(Error::NotConfigured);
         }
@@ -346,7 +396,7 @@ impl IgdbClient {
             let token = self.token(forced)?;
             let auth = format!("Bearer {token}");
             let result = self.transport.post(
-                GAMES_URL,
+                url,
                 &[("Client-ID", &self.client_id), ("Authorization", &auth), ("Accept", "application/json"), ("Content-Type", "text/plain")],
                 apicalypse,
             );
@@ -360,9 +410,9 @@ impl IgdbClient {
 
     /// Exécute la requête avec tous les champs ; si le service la refuse (400), retente avec la liste
     /// précédente (qui a fonctionné en conditions réelles), puis sans `game_type`.
-    /// `rev` des fiches reçues : 2 = détaillées, 1 = champs de base seulement (à compléter plus tard).
+    /// `rev` des fiches reçues : 2 = détaillées (sans durées), 1 = champs de base seulement (à compléter plus tard).
     fn run(&self, build: impl Fn(&str) -> String) -> Result<Vec<GameInfo>> {
-        let tiers = [(FIELDS_FULL, REV_FULL), (FIELDS, 1), (FIELDS_BASE, 1)];
+        let tiers = [(FIELDS_FULL, REV_DETAILS), (FIELDS, 1), (FIELDS_BASE, 1)];
         for (i, (fields, rev)) in tiers.iter().enumerate() {
             match self.post_games(&build(fields)) {
                 Err(Error::Http(400, _)) if i + 1 < tiers.len() => continue,
@@ -389,7 +439,19 @@ impl IgdbClient {
             return Ok(vec![]);
         }
         let list = ids.iter().map(u64::to_string).collect::<Vec<_>>().join(",");
-        self.run(|fields| format!("fields {fields}; where id = ({list}); limit {};", ids.len().min(500)))
+        let mut games = self.run(|fields| format!("fields {fields}; where id = ({list}); limit {};", ids.len().min(500)))?;
+        // Durées : seulement pour les fiches détaillées ; en cas d'échec, on garde les fiches telles quelles (rev 2)
+        // pour que la prochaine synchronisation réessaie.
+        if !games.is_empty() && games.iter().all(|g| g.rev == REV_DETAILS) {
+            let q = format!("fields game_id,hastily,normally,completely,count; where game_id = ({list}); limit 500;");
+            if let Ok(mut ttb) = self.post_to(TTB_URL, &q).and_then(|b| parse_time_to_beats(&b)) {
+                for g in &mut games {
+                    g.time_to_beat = ttb.remove(&g.id);
+                    g.rev = REV_FULL;
+                }
+            }
+        }
+        Ok(games)
     }
 
     /// Vérifie clés et réseau (jeton + une requête minimale).
@@ -571,7 +633,7 @@ mod tests {
         // si les champs détaillés passent du premier coup : fiche complète
         let t = FakeTransport::with(vec![Ok(TOKEN_OK.into()), Ok(GAMES_SAMPLE.into())]);
         let c = IgdbClient::new(t, "a", "b");
-        assert!(c.search("zelda", 5).unwrap().iter().all(|g| g.rev == REV_FULL));
+        assert!(c.search("zelda", 5).unwrap().iter().all(|g| g.rev == REV_DETAILS));
     }
 
     #[test]
@@ -628,6 +690,46 @@ mod tests {
         c.by_ids(&[7, 9]).unwrap();
         let body = &t.calls()[1].2;
         assert!(body.contains("where id = (7,9);") && body.ends_with("limit 2;"), "{body}");
+    }
+
+    #[test]
+    fn lecture_durees_zero_et_champs_absents() {
+        let m = parse_time_to_beats(r#"[{"id":1,"game_id":10,"hastily":3600,"normally":0,"count":4},
+                                         {"id":2,"game_id":11},{"id":3}]"#).unwrap();
+        assert_eq!(m[&10], TimeToBeat { hastily: Some(3600), normally: None, completely: None, count: 4 });
+        assert_eq!(m[&10].reference(), Some(3600), "normal absent : on prend rapide");
+        assert_eq!(m[&11], TimeToBeat::default());
+        assert_eq!(m.len(), 2, "entrée sans game_id ignorée");
+    }
+
+    #[test]
+    fn by_ids_associe_les_durees_par_game_id() {
+        let ttb = r#"[{"game_id":7346,"hastily":180000,"normally":330000,"completely":680000,"count":312},
+                      {"game_id":7346,"normally":1,"count":1}]"#;
+        let t = FakeTransport::with(vec![Ok(TOKEN_OK.into()), Ok(GAMES_SAMPLE.into()), Ok(ttb.into())]);
+        let c = IgdbClient::new(t.clone(), "id", "s3cr3t");
+        let games = c.by_ids(&[7346, 41826, 113112]).unwrap();
+        let calls = t.calls();
+        assert_eq!(calls[2].0, TTB_URL);
+        assert!(calls[2].2.contains("where game_id = (7346,41826,113112)"));
+        let zelda = games.iter().find(|g| g.id == 7346).unwrap();
+        assert_eq!(zelda.time_to_beat.as_ref().unwrap().normally, Some(330000), "la première entrée gagne");
+        assert!(games.iter().all(|g| g.rev == REV_FULL));
+        assert!(games.iter().find(|g| g.id == 113112).unwrap().time_to_beat.is_none());
+    }
+
+    #[test]
+    fn by_ids_sans_durees_si_la_requete_echoue() {
+        let t = FakeTransport::with(vec![Ok(TOKEN_OK.into()), Ok(GAMES_SAMPLE.into()), Err(Error::Http(429, "trop".into()))]);
+        let games = IgdbClient::new(t, "id", "s").by_ids(&[7346]).unwrap();
+        assert!(!games.is_empty());
+        assert!(games.iter().all(|g| g.rev == REV_DETAILS && g.time_to_beat.is_none()));
+    }
+
+    #[test]
+    fn ancienne_fiche_sans_durees() {
+        let g: GameInfo = serde_json::from_str(r#"{"id":1,"name":"Hades","slug":"hades","rev":2}"#).unwrap();
+        assert_eq!((g.rev, g.time_to_beat), (2, None));
     }
 }
 

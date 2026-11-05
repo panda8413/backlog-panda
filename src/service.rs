@@ -1487,7 +1487,7 @@ mod tests {
     fn completion_des_fiches_manquantes() {
         let dir = temp_dir("sync");
         let hades_with_cover = r#"[{"id":113112,"name":"Hades","slug":"hades--1","cover":{"image_id":"coabc"},"first_release_date":1600300800}]"#;
-        let t = FakeTransport::with(vec![Ok(TOKEN_OK.into()), Ok(hades_with_cover.into())]);
+        let t = FakeTransport::with(vec![Ok(TOKEN_OK.into()), Ok(hades_with_cover.into()), Ok("[]".into())]);
         let s = Service::open(&dir, t.clone()).unwrap();
         // ajouté hors ligne : pas de jaquette
         ok(s.call("add", &json!({"id": 113112, "status": "backlog"})));
@@ -1497,7 +1497,7 @@ mod tests {
         assert_eq!((r["updated"].as_u64(), r["pending"].as_u64()), (Some(1), Some(0)));
         let lib = ok(s.call("library", &json!({})));
         assert!(lib["entries"][0]["cover_url"].as_str().unwrap().contains("coabc"));
-        assert!(t.calls().last().unwrap().2.contains("where id = (113112);"));
+        assert!(t.calls()[1].2.contains("where id = (113112);"), "requête des fiches (la dernière demande les durées)");
         let _ = std::fs::remove_dir_all(&dir);
     }
 
@@ -1767,15 +1767,15 @@ mod tests {
         store.games.insert(1, old);
         store.library.upsert(1, Status::Playing, None);
         store.save(&dir).unwrap();
-        let t = FakeTransport::with(vec![Ok(TOKEN_OK.into()), Ok(DETAILED.into()), Ok(DETAILED.into())]);
+        let t = FakeTransport::with(vec![Ok(TOKEN_OK.into()), Ok(DETAILED.into()), Ok("[]".into()), Ok(DETAILED.into())]);
         let s = Service::open(&dir, t.clone()).unwrap();
         assert_eq!(s.call("refresh", &json!({"id": 1}))["error"].as_str().map(|e| e.contains("IGDB")), Some(true), "sans clés");
         s.call("save_settings", &json!({"igdb_client_id": "a", "igdb_client_secret": "b"}));
         let r = ok(s.call("refresh", &json!({"id": 1})));
-        assert_eq!((r["rev"].as_u64(), r["developers"][0].as_str()), (Some(2), Some("Supergiant Games")));
+        assert_eq!((r["rev"].as_u64(), r["developers"][0].as_str()), (Some(3), Some("Supergiant Games")));
         assert_eq!(r["summary_fr"], "Défie le dieu des morts.", "résumé inchangé : traduction conservée");
         assert_eq!(r["entry"]["status"], "playing");
-        assert!(t.calls().last().unwrap().2.contains("where id = (1);"));
+        assert!(t.calls()[1].2.contains("where id = (1);"), "requête des fiches (la dernière demande les durées)");
         // fiche déjà complète : la synchronisation globale n'a plus rien à faire
         let sync = ok(s.call("sync_metadata", &json!({})));
         assert_eq!((sync["updated"].as_u64(), sync["pending"].as_u64()), (Some(0), Some(0)));
@@ -2206,7 +2206,7 @@ mod tests {
     #[test]
     fn import_csv_avec_igdb() {
         // jeton, puis par identifiants (lot), puis une recherche par titre sans identifiant
-        let (s, dir, t) = with_igdb("csv-igdb", vec![Ok(TOKEN_OK.into()), Ok(DETAILED.into()), Ok(DETAILED.into()), Ok(DETAILED.into()), Ok("[]".into())]);
+        let (s, dir, t) = with_igdb("csv-igdb", vec![Ok(TOKEN_OK.into()), Ok(DETAILED.into()), Ok("[]".into()), Ok(DETAILED.into()), Ok(DETAILED.into()), Ok("[]".into())]);
         let csv = "Titre;Année;Statut;Identifiant IGDB\nHades;2020;Terminé;\nDoom;;;\nZzz;;;\nCeleste;;Joué;2\n";
         let start = ok(s.call("csv_start", &json!({"content": csv})));
         assert_eq!((start["mode"].as_str(), start["with_ids"].as_u64()), (Some("igdb"), Some(1)));
@@ -2216,8 +2216,8 @@ mod tests {
         assert_eq!(review["items"][3]["candidates"][0]["name"], "Celeste", "trouvé par son identifiant");
         assert_eq!(review["items"][1]["candidates"].as_array().unwrap().len(), 3, "« Doom » ne correspond exactement à aucun titre : à vérifier");
         let calls = t.calls();
-        assert_eq!(calls.len(), 5, "un jeton, un lot d'identifiants, trois recherches : {calls:?}");
-        assert!(calls[1].2.contains("where id = (2);") && calls[2].2.contains("search \"Hades\""), "{calls:?}");
+        assert_eq!(calls.len(), 6, "un jeton, un lot d'identifiants et ses durées, trois recherches : {calls:?}");
+        assert!(calls[1].2.contains("where id = (2);") && calls[3].2.contains("search \"Hades\""), "{calls:?}");
         // le choix de « Doom » : le troisième candidat (Doom Eternal)
         let doom = review["items"][1]["candidates"].as_array().unwrap().iter().find(|c| c["name"] == "Doom Eternal").unwrap()["id"].clone();
         let mut choices = pick(&review, &["sure"]);
