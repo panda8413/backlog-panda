@@ -64,6 +64,7 @@
     close: 'M6 6l12 12M18 6L6 18',
     trash: 'M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13',
     note: 'M5 5h14v10H10l-5 4V5Z',
+    chevron: 'M6 9l6 6 6-6',
     star: 'M12 2.8l2.78 5.9 6.42.8-4.7 4.4 1.2 6.4L12 17.2 6.3 20.3l1.2-6.4-4.7-4.4 6.42-.8L12 2.8Z',
   };
 
@@ -513,6 +514,8 @@
     if (state.notice) nodes.unshift(noticeBanner());
     view.replaceChildren(...nodes);
     view.scrollTop = top;
+    if (sectionObserver) { sectionObserver.disconnect(); sectionObserver = null; }
+    if (state.view === 'library') watchSections();
   }
 
   /** Message important venu du moteur au lancement (ex. bibliothèque restaurée) : reste affiché jusqu'à « Compris ». */
@@ -573,6 +576,94 @@
       }, 'Réinitialiser') : null);
   }
 
+  /* ---------- Sections de la vue « Tous » ---------- */
+
+  const SECTION_ORDER = ['playing', 'backlog', 'wishlist', 'completed', 'played', 'abandoned'];
+  const SECTION_MODES = ['row', 'all', 'closed'];
+  const memModes = {};     // copie en mémoire : l'état tient même si localStorage est indisponible
+  const lastOpen = {};     // dernier mode ouvert, pour rouvrir une section fermée au chevron
+  let sectionObserver = null;
+
+  /** Lit `bp.sections` sans jamais lever : statuts connus, trois modes permis, défauts pour le reste. */
+  function sectionModes() {
+    const modes = Object.fromEntries(SECTION_ORDER.map((st) => [st, st === 'abandoned' ? 'closed' : 'row']));
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem('bp.sections')); } catch (_) { saved = null; }
+    for (const src of [saved, memModes]) {
+      if (!src || typeof src !== 'object' || Array.isArray(src)) continue;
+      for (const st of SECTION_ORDER) {
+        if (Object.prototype.hasOwnProperty.call(src, st) && SECTION_MODES.includes(src[st])) modes[st] = src[st];
+      }
+    }
+    return modes;
+  }
+
+  function saveSectionMode(status, mode) {
+    memModes[status] = mode;
+    try { localStorage.setItem('bp.sections', JSON.stringify(sectionModes())); } catch (_) { /* défauts à la prochaine session */ }
+  }
+
+  function sectionEl(status, cards) {
+    const mode = sectionModes()[status];
+    if (mode !== 'closed') lastOpen[status] = mode;
+    const n = cards.length;
+    const hid = `sec-${status}`;
+    const label = (m) => `${STATUS[status].label} : ${m === 'closed' ? 'ouvrir' : 'fermer'} la section`;
+    const sec = h('section', { class: 'lib-section', 'aria-labelledby': `${hid}-t`, data: { mode, status } });
+    const grid = h('div', { class: 'grid', id: `${hid}-g` }, cards);
+    const toggle = h('button', { class: 'sec-toggle', type: 'button', 'aria-controls': `${hid}-g`, 'aria-expanded': String(mode !== 'closed'), 'aria-label': label(mode) }, icon('chevron', 18));
+    const more = h('button', { class: 'btn quiet small sec-more', type: 'button', hidden: true, 'aria-controls': `${hid}-g`, 'aria-expanded': String(mode === 'all') });
+    more.dataset.n = n;
+
+    function apply(next) {
+      sec.dataset.mode = next;
+      if (next !== 'closed') lastOpen[status] = next;
+      saveSectionMode(status, next);
+      toggle.setAttribute('aria-expanded', String(next !== 'closed'));
+      toggle.setAttribute('aria-label', label(next));
+      fitSection(sec);
+    }
+    toggle.addEventListener('click', () => apply(sec.dataset.mode === 'closed' ? (lastOpen[status] || 'row') : 'closed'));
+    more.addEventListener('click', () => apply(sec.dataset.mode === 'all' ? 'row' : 'all'));
+
+    sec.append(
+      h('div', { class: 'sec-head' },
+        h('span', { class: 'd', vars: { '--c': `var(--st-${status})` } }),
+        h('h2', { id: `${hid}-t`, text: STATUS[status].label }),
+        h('span', { class: 'n', text: n }),
+        more, toggle),
+      grid);
+    return sec;
+  }
+
+  /** Mesure les rangées : en mode « row », cartes des rangées suivantes `inert` et bouton « Voir les N » s'il y en a. */
+  function fitSection(sec) {
+    const mode = sec.dataset.mode;
+    const more = sec.querySelector('.sec-more');
+    const cards = [...sec.querySelector('.grid').children];
+    if (mode === 'closed' || !cards.length) { more.hidden = true; return; }
+    const top0 = cards[0].offsetTop;
+    const over = cards.map((c) => c.offsetTop > top0 + 1);
+    const any = over.includes(true);
+    cards.forEach((c, i) => { c.inert = mode === 'row' && over[i]; });
+    more.hidden = !any;
+    more.setAttribute('aria-expanded', String(mode === 'all'));
+    more.textContent = mode === 'row' ? `Voir les ${more.dataset.n}` : 'Réduire';
+  }
+
+  /** Après chaque rendu de la bibliothèque : mesure, puis un seul observateur sur #view. */
+  function watchSections() {
+    if (sectionObserver) { sectionObserver.disconnect(); sectionObserver = null; }
+    const view = $('#view');
+    const secs = () => [...view.querySelectorAll('.lib-section')];
+    if (!secs().length) return;
+    secs().forEach(fitSection);
+    if (typeof ResizeObserver === 'function') {
+      sectionObserver = new ResizeObserver(() => secs().forEach(fitSection));
+      sectionObserver.observe(view);
+    }
+  }
+
   function viewLibrary() {
     const { entries, counts } = state.lib;
     const total = state.total || 0;
@@ -597,16 +688,17 @@
         h('button', { class: 'btn small', type: 'button', onclick: () => go('settings'), text: 'Réglages' })));
     }
 
-    const playing = state.status === 'all' && !activeFilters() ? entries.filter((e) => e.entry.status === 'playing') : [];
-    if (playing.length) {
-      out.push(h('h2', { class: 'section' }, 'Reprendre', h('span', { class: 'n', text: playing.length })));
-      out.push(h('div', { class: 'shelf' }, playing.map(cardEl)));
-    }
-    const rest = playing.length ? entries.filter((e) => e.entry.status !== 'playing') : entries;
-    if (playing.length && rest.length) out.push(h('h2', { class: 'section' }, 'Autres jeux', h('span', { class: 'n', text: rest.length })));
-    if (rest.length) out.push(h('div', { class: 'grid' }, rest.map(cardEl)));
-    else if (!playing.length) {
-      out.push(h('p', { class: 'note', text: activeFilters() ? 'Aucun jeu ne correspond à ces filtres.' : 'Aucun jeu avec ce statut.' }));
+    const empty = () => h('p', { class: 'note', text: activeFilters() ? 'Aucun jeu ne correspond à ces filtres.' : 'Aucun jeu avec ce statut.' });
+    if (state.status === 'all') {
+      const secs = SECTION_ORDER
+        .map((st) => [st, entries.filter((e) => e.entry.status === st)])
+        .filter(([, list]) => list.length)
+        .map(([st, list]) => sectionEl(st, list.map(cardEl)));
+      if (secs.length) out.push(...secs); else out.push(empty());
+    } else if (entries.length) {
+      out.push(h('div', { class: 'grid' }, entries.map(cardEl)));
+    } else {
+      out.push(empty());
     }
     return out;
   }
