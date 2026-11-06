@@ -37,6 +37,7 @@
 
   --star: #ffc24b;
   --star-end: #ff9a3d;
+  --score-fg: #ffc24b;
   --star-base: rgba(255, 255, 255, 0.09);
   --focus: #aebfff;
   --accent: #8f9bff;
@@ -79,6 +80,90 @@
   --scrollbar: #323a66;
   --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%237f86aa' stroke-width='1.7' stroke-linecap='round'/%3E%3C/svg%3E");
 }
+
+/* Thème clair cuivré. Doit rester après le bloc sombre pour l'emporter. */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: #f7f5f2;
+  --bg-rail: #efebe6;
+  --panel: #ffffff;
+  --panel-2: #f3efea;
+  --line: rgba(60, 40, 20, 0.10);
+  --line-strong: rgba(60, 40, 20, 0.20);
+  --text: #1f1a16;
+  --dim: #5e554c;
+  --faint: #776c62;
+
+  --st-backlog: #2f6fd6;
+  --st-playing: #12855f;
+  --st-completed: #946200;
+  --st-played: #6b4fd1;
+  --st-abandoned: #c8364f;
+  --st-wishlist: #c2408e;
+
+  --star: #d99a00;
+  --star-end: #e0701f;
+  --score-fg: #ffc24b;
+  --star-base: rgba(60, 40, 20, 0.12);
+  --focus: #b5622f;
+  --accent: #c8794a;
+  --track: rgba(60, 40, 20, 0.07);
+  --track-strong: rgba(60, 40, 20, 0.14);
+
+  --hover: rgba(60, 40, 20, 0.05);
+  --hover-strong: rgba(60, 40, 20, 0.09);
+  --field-bg: #ffffff;
+  --field-hover: rgba(200, 121, 74, 0.5);
+  --field-on: rgba(200, 121, 74, 0.8);
+  --ring: rgba(200, 121, 74, 0.18);
+  --inset-bg: rgba(60, 40, 20, 0.04);
+  --overlay-bg: rgba(24, 18, 14, 0.78);
+  --overlay-fg: #fbf7f3;
+  --scrim: rgba(31, 26, 22, 0.45);
+  --sheet-bg: #fbf9f6;
+  --toast-bg: #ffffff;
+  --search-focus-bg: #ffffff;
+  --glow-1: rgba(200, 121, 74, 0.1);
+  --glow-2: transparent;
+
+  --shadow-card: 0 14px 28px -18px rgba(60, 40, 20, 0.18);
+  --shadow-cover: 0 30px 60px -22px rgba(60, 40, 20, 0.18);
+  --shadow-sheet: 0 50px 120px -30px rgba(60, 40, 20, 0.18), 0 0 0 1px rgba(60, 40, 20, 0.08);
+  --shadow-pop: 0 20px 50px -18px rgba(60, 40, 20, 0.16);
+
+  --primary-bg: #f6e3d3;
+  --primary-fg: #8a4a22;
+  --primary-hover: #fbeadc;
+  --primary-shadow: 0 10px 26px -14px rgba(60, 40, 20, 0.18);
+  --primary-shadow-hover: 0 14px 32px -12px rgba(60, 40, 20, 0.18);
+  --link: #9a5428;
+  --link-hover: #6e3a18;
+
+  --bubble-bg: #f6e3d3;
+  --bubble-border: #e8bf9f;
+  --bubble-fg: #8a4a22;
+
+  --scrollbar: #d6cdc4;
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23776c62' stroke-width='1.7' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+/* Éléments « bulle » du thème clair. En sombre, ces règles gardent leur rendu d'origine. */
+:root[data-theme="light"] .nav button[aria-current="page"],
+:root[data-theme="light"] .tab[aria-pressed="true"],
+:root[data-theme="light"] .chip,
+:root[data-theme="light"] .btn.primary,
+:root[data-theme="light"] .csv-tabs button.on,
+:root[data-theme="light"] .bk-mode:has(input:checked) {
+  background: var(--bubble-bg);
+  border-color: var(--bubble-border);
+  color: var(--bubble-fg);
+}
+:root[data-theme="light"] .nav button[aria-current="page"] { box-shadow: none; }
+:root[data-theme="light"] .tab[aria-pressed="true"] .n { color: var(--bubble-fg); }
+:root[data-theme="light"] .flt.on select { border-color: var(--bubble-border); background-color: var(--bubble-bg); color: var(--bubble-fg); }
+:root[data-theme="light"] .btn.primary { border-color: var(--bubble-border); }
+:root[data-theme="light"] .btn.primary:hover { background: var(--primary-hover); }
 
 /* Variables indépendantes du thème. */
 :root {
@@ -415,7 +500,7 @@ h2.section .n { font: 500 14px var(--font-ui); color: var(--faint); letter-spaci
   background: var(--overlay-bg);
   font-size: 13px;
   font-weight: 700;
-  color: var(--star);
+  color: var(--score-fg);
   font-variant-numeric: tabular-nums;
 }
 

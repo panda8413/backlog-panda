@@ -571,7 +571,7 @@
 
     const tabs = [{ key: 'all', label: 'Tous' }, ...STATUSES].map((s) =>
       h('button', {
-        class: 'tab', type: 'button', 'aria-pressed': state.status === s.key, vars: { '--c': s.key === 'all' ? 'var(--dim)' : `var(--st-${s.key})` },
+        class: 'tab', type: 'button', 'aria-pressed': String(state.status === s.key), vars: { '--c': s.key === 'all' ? 'var(--dim)' : `var(--st-${s.key})` },
         onclick: async () => { state.status = s.key; await loadLibrary(); render(); },
       }, s.key === 'all' ? null : h('span', { class: 'd' }), s.label, h('span', { class: 'n', text: counts[s.key] || 0 })));
     const select = h('select', { 'aria-label': 'Trier par', onchange: async (e) => { state.sort = e.target.value; await loadLibrary(); render(true); } },
@@ -1443,7 +1443,7 @@
     const cur = c.entry && c.entry.status;
     const ambient = h('div', { class: 'ambient', 'aria-hidden': 'true' }, validCover(c) ? h('img', { src: c.cover_url, alt: '' }) : fallbackEl(c.name));
     const pills = STATUSES.map((s) => h('button', {
-      class: 'pill', type: 'button', 'aria-pressed': cur === s.key, vars: { '--c': `var(--st-${s.key})` },
+      class: 'pill', type: 'button', 'aria-pressed': String(cur === s.key), vars: { '--c': `var(--st-${s.key})` },
       onclick: () => setStatus(c, s.key),
     }, h('span', { class: 'd' }), s.label));
     const stars = c.entry && c.entry.stars;

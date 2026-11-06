@@ -59,7 +59,7 @@ Les autres valeurs (texte, couleurs d'état, accent lavande) sont inchangées. L
 | Étoiles | `#d99a00` |
 | Ombres | douces, brunes et peu opaques (`rgba(60, 40, 20, 0.08–0.18)`) au lieu des halos lumineux |
 
-Couleurs d'état en clair, plus foncées pour rester lisibles sur blanc : Backlog `#2f6fd6`, En cours `#138a66`, Terminé `#946200`, Joué `#6b4fd1`, Abandonné `#c8364f`, Envie `#c2408e`.
+Couleurs d'état en clair, plus foncées pour rester lisibles sur blanc : Backlog `#2f6fd6`, En cours `#12855f`, Terminé `#946200`, Joué `#6b4fd1`, Abandonné `#c8364f`, Envie `#c2408e`.
 
 Les **bulles cuivrées** habillent, en clair : l'onglet d'état actif, les filtres actifs, l'entrée de menu sélectionnée, les puces (genres…), le bouton principal et les boutons de choix de mode (import, CSV). En sombre, ces éléments gardent leur style actuel (accent lavande).
 
