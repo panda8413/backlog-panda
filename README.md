@@ -20,7 +20,8 @@ Prérequis Windows : Rust (rustup) **et** les « Outils de build Visual Studio �
 ```
 cargo run                               # ouvre l'application dans ton navigateur
 cargo run -- app --demo                 # avec quelques jeux d'exemple (dossier temporaire)
-cargo test                              # 164 tests
+cargo test                              # tests du cœur Rust
+node --test "tests/ui/*.test.cjs"       # tests de l'interface (thèmes, sections)
 ```
 
 Fenêtre native (Tauri 2, WebView2 déjà présent sur Windows 11) :
@@ -49,6 +50,8 @@ Anciennes commandes (maquette Backloggd, conservées) : `import-fixtures`, `sear
 ## Fiche d'un jeu et filtres
 - **Fiche** : fenêtre centrée avec studio, éditeur, date de sortie, franchise, plateformes, modes de jeu, perspective, thèmes et note IGDB.
 - **Ta part** : statut, plateforme sur laquelle tu joues, note en demi-étoiles, commentaire libre (enregistré automatiquement).
+- **Thèmes** : clair (cuivre) ou sombre, au choix dans Réglages → Apparence (par défaut « Selon Windows », qui suit le mode de ton système) ou avec le bouton soleil/lune en bas de la barre de gauche. Le choix est mémorisé.
+- **Sections** : la vue « Tous » regroupe les jeux par statut (En cours, Backlog, Envie, Terminé, Joué, Abandonné). Chaque section montre une rangée ; « Voir les N » la déplie, « Réduire » la replie, le chevron la ferme (Abandonné est fermée au départ). L'état de chaque section est mémorisé.
 - **Bibliothèque** : filtres par genre, plateforme, studio et note minimale, combinables avec les statuts et le tri (dernière modification, note, nom, année, temps de jeu, date d'ajout, plateforme).
 - **Dates** : la date d'ajout se pose toute seule ; la date de fin aussi quand le statut passe à Terminé, Joué ou Abandonné (elle s'efface si tu reprends le jeu). Les deux se corrigent dans la fiche (champs de date). Tri « Date d'ajout » dans la bibliothèque ; colonnes « Ajouté le » / « Terminé le » dans le CSV. Les jeux ajoutés avant cette version n'ont pas de date d'ajout : à renseigner à la main si tu la connais.
 - **Temps de jeu** : saisie libre (`12h30`, `12,5`, `45 min`) dans la fiche ; tri par temps de jeu dans la bibliothèque.
