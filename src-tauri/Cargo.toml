@@ -1,6 +1,6 @@
 [package]
 name = "backlog-panda-app"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "MIT"
 description = "Backlog Panda : application de bureau (coque Tauri autour du cœur Rust)"
