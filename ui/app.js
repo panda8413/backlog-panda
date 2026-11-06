@@ -58,6 +58,8 @@
     search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM20 20l-4-4',
     stats: 'M5 20V10M12 20V4M19 20v-7',
     settings: 'M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6',
+    sun: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.4 1.4M17.6 17.6L19 19M5 19l1.4-1.4M17.6 6.4L19 5',
+    moon: 'M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z',
     plus: 'M12 5v14M5 12h14',
     close: 'M6 6l12 12M18 6L6 18',
     trash: 'M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13',
@@ -471,6 +473,17 @@
     conn.title = 'Ouvrir les réglages';
   }
 
+  function renderThemeToggle() {
+    const btn = $('#theme-toggle');
+    const toDark = BPTheme.resolved() === 'light';
+    const label = toDark ? 'Passer au thème sombre' : 'Passer au thème clair';
+    btn.replaceChildren(icon(toDark ? 'moon' : 'sun', 20));
+    btn.setAttribute('aria-label', label);
+    btn.title = label;
+    const sec = $('#appearance');
+    if (sec) sec.replaceWith(appearance());
+  }
+
   function go(view) {
     state.view = view;
     if (view !== 'search') { $('#q').value = ''; state.query = ''; }
@@ -774,6 +787,26 @@
       h('p', { class: 'fine', text: 'L’offre gratuite impose un quota mensuel de caractères traduits, largement suffisant pour des résumés de jeux.' }));
   }
 
+  function appearance() {
+    const cur = BPTheme.get();
+    return h('section', { class: 'panel', id: 'appearance' },
+      h('h3', { text: 'Apparence' }),
+      h('div', { class: 'seg', role: 'radiogroup', 'aria-label': 'Apparence' },
+        ...[['system', 'Selon Windows'], ['light', 'Clair'], ['dark', 'Sombre']].map(([val, label]) =>
+          h('button', {
+            class: 'seg-btn', type: 'button', role: 'radio', 'aria-checked': String(cur === val), tabindex: cur === val ? '0' : '-1',
+            onclick: () => { BPTheme.set(val); const f = $('#appearance [aria-checked="true"]'); if (f) f.focus(); },
+            onkeydown: (e) => {
+              const keys = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
+              if (!keys[e.key]) return;
+              e.preventDefault();
+              const btns = [...e.currentTarget.parentNode.children];
+              btns[(btns.indexOf(e.currentTarget) + keys[e.key] + btns.length) % btns.length].click();
+            },
+            text: label,
+          }))));
+  }
+
   function viewSettings() {
     const s = state.settings;
     const out = [h('div', { class: 'page-head' }, h('h1', { text: 'Réglages' }))];
@@ -827,6 +860,7 @@
     const anyKey = s.has_secret || s.has_deepl;
     const pill = s.secret_storage === 'os' ? (anyKey ? ['ok', 'Clés chiffrées'] : ['ok', 'Coffre prêt']) : anyKey ? ['todo', 'Clés en clair'] : ['opt', 'Aucune clé enregistrée'];
     out.push(h('div', { class: 'settings' },
+      appearance(),
       h('section', { class: 'panel' },
         h('h3', {}, 'Connexion à IGDB', h('span', { class: 'pillstate ' + (s.configured ? 'ok' : 'todo'), text: s.configured ? 'Configurée' : 'Pas encore configurée' })),
         h('p', { class: 'note', text: 'Sans ces clés, l’application fonctionne avec un petit catalogue hors ligne, sans jaquettes.' }),
@@ -1547,6 +1581,9 @@
       if (e.key === 'Escape') { $('#q').value = ''; $('#q').blur(); state.query = ''; go('library'); }
     });
     $('#conn').addEventListener('click', () => go('settings'));
+    $('#theme-toggle').addEventListener('click', () => BPTheme.set(BPTheme.resolved() === 'dark' ? 'light' : 'dark'));
+    renderThemeToggle();
+    BPTheme.onChange(renderThemeToggle);
     $('#scrim').addEventListener('click', closeDrawer);
     document.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); closeDrawer(); $('#q').focus(); $('#q').select(); }
