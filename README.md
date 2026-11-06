@@ -21,7 +21,7 @@ Prérequis Windows : Rust (rustup) **et** les « Outils de build Visual Studio �
 cargo run                               # ouvre l'application dans ton navigateur
 cargo run -- app --demo                 # avec quelques jeux d'exemple (dossier temporaire)
 cargo test                              # tests du cœur Rust
-node --test "tests/ui/*.test.cjs"       # tests de l'interface (thèmes, sections)
+node --test "tests/ui/*.test.cjs"       # tests de l'interface (thèmes, CSS)
 ```
 
 Fenêtre native (Tauri 2, WebView2 déjà présent sur Windows 11) :

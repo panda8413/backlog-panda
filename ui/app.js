@@ -474,9 +474,13 @@
     conn.title = 'Ouvrir les réglages';
   }
 
+  // theme.js peut échouer à charger : l'appli tourne alors sans bouton ni réglage d'apparence (sombre par défaut).
+  const BPT = window.BPTheme || null;
+
   function renderThemeToggle() {
     const btn = $('#theme-toggle');
-    const toDark = BPTheme.resolved() === 'light';
+    if (!BPT) { btn.hidden = true; return; }
+    const toDark = BPT.resolved() === 'light';
     const label = toDark ? 'Passer au thème sombre' : 'Passer au thème clair';
     btn.replaceChildren(icon(toDark ? 'moon' : 'sun', 20));
     btn.setAttribute('aria-label', label);
@@ -880,17 +884,18 @@
   }
 
   function appearance() {
-    const cur = BPTheme.get();
+    if (!BPT) return null;
+    const cur = BPT.get();
     return h('section', { class: 'panel', id: 'appearance' },
       h('h3', { text: 'Apparence' }),
       h('div', { class: 'seg', role: 'radiogroup', 'aria-label': 'Apparence' },
         ...[['system', 'Selon Windows'], ['light', 'Clair'], ['dark', 'Sombre']].map(([val, label]) =>
           h('button', {
             class: 'seg-btn', type: 'button', role: 'radio', 'aria-checked': String(cur === val), tabindex: cur === val ? '0' : '-1',
-            onclick: () => { BPTheme.set(val); const f = $('#appearance [aria-checked="true"]'); if (f) f.focus(); },
+            onclick: () => { BPT.set(val); const f = $('#appearance [aria-checked="true"]'); if (f) f.focus(); },
             onkeydown: (e) => {
               const keys = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
-              if (!keys[e.key]) return;
+              if (e.altKey || e.ctrlKey || e.metaKey || !keys[e.key]) return;
               e.preventDefault();
               const btns = [...e.currentTarget.parentNode.children];
               btns[(btns.indexOf(e.currentTarget) + keys[e.key] + btns.length) % btns.length].click();
@@ -902,7 +907,7 @@
   function viewSettings() {
     const s = state.settings;
     const out = [h('div', { class: 'page-head' }, h('h1', { text: 'Réglages' }))];
-    if (!s) return out;
+    if (!s) { if (BPT) out.push(h('div', { class: 'settings' }, appearance())); return out; }
     const msg = h('p', { class: 'status-msg', role: 'status' });
     const say = (text, ok) => { msg.textContent = text; msg.className = 'status-msg ' + (ok ? 'ok' : 'ko'); };
     const id = h('input', { id: 'cid', type: 'text', autocomplete: 'off', spellcheck: 'false', value: s.igdb_client_id || '', disabled: s.from_env });
@@ -1673,9 +1678,9 @@
       if (e.key === 'Escape') { $('#q').value = ''; $('#q').blur(); state.query = ''; go('library'); }
     });
     $('#conn').addEventListener('click', () => go('settings'));
-    $('#theme-toggle').addEventListener('click', () => BPTheme.set(BPTheme.resolved() === 'dark' ? 'light' : 'dark'));
+    if (BPT) $('#theme-toggle').addEventListener('click', () => BPT.set(BPT.resolved() === 'dark' ? 'light' : 'dark'));
     renderThemeToggle();
-    BPTheme.onChange(renderThemeToggle);
+    if (BPT) BPT.onChange(renderThemeToggle);
     $('#scrim').addEventListener('click', closeDrawer);
     document.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); closeDrawer(); $('#q').focus(); $('#q').select(); }

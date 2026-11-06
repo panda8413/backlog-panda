@@ -106,7 +106,7 @@
   --star-end: #e0701f;
   --score-fg: #ffc24b;
   --star-base: rgba(60, 40, 20, 0.12);
-  --focus: #c8794a;
+  --focus: #b0623a;
   --accent: #c8794a;
   --track: rgba(60, 40, 20, 0.07);
   --track-strong: rgba(60, 40, 20, 0.14);
@@ -219,6 +219,7 @@ button { cursor: pointer; }
 }
 .brand { display: flex; align-items: center; gap: 11px; padding: 0 8px; }
 .logo { width: 34px; height: 34px; flex: none; }
+:root[data-theme="light"] .logo .face { stroke: var(--line-strong); stroke-width: 0.8; }
 .brand-name {
   font-family: var(--font-display);
   font-weight: 700;
@@ -630,6 +631,7 @@ h2.section .n { font: 500 14px var(--font-ui); color: var(--faint); letter-spaci
 }
 .sheet.open { opacity: 1; visibility: visible; transform: translate(-50%, -50%); transition-delay: 0s; }
 .sheet .ambient { position: absolute; inset: -60px -60px auto -60px; height: 380px; overflow: hidden; opacity: 0.5; pointer-events: none; mask-image: linear-gradient(black 25%, transparent); -webkit-mask-image: linear-gradient(black 25%, transparent); }
+:root[data-theme="light"] .sheet .ambient { opacity: 0.28; }
 .sheet .ambient img, .sheet .ambient .fallback { position: absolute; inset: -10%; width: 120%; height: 120%; object-fit: cover; filter: blur(52px) saturate(1.7); }
 .sheet .ambient .fallback span { display: none; }
 .sheet-scroll { position: relative; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
@@ -963,7 +965,7 @@ h2.section .n { font: 500 14px var(--font-ui); color: var(--faint); letter-spaci
 .dates { display: grid; grid-template-columns: repeat(2, minmax(0, 220px)); gap: 14px 20px; align-items: start; }
 .dates .hint { grid-column: 1 / -1; min-height: 1em; }
 .dates .hint:empty { display: none; }
-.sheet input[type="date"] { color-scheme: dark; font-family: inherit; }
+.sheet input[type="date"] { font-family: inherit; }
 @media (max-width: 560px) { .dates { grid-template-columns: 1fr; } }
 
 /* ---------- Import d'une liste (CSV) ---------- */

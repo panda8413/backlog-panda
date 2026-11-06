@@ -123,6 +123,8 @@ test('contraste AA en clair', () => {
   const bgs = ['--bg', '--panel', '--panel-2', '--bg-rail'];
   for (const fg of ['--text', '--dim', '--faint']) for (const bg of bgs) atLeast(l, fg, bg);
   atLeast(l, '--bubble-fg', '--bubble-bg');
+  // L'anneau de focus (composant d'interface, WCAG 1.4.11) : 3:1 sur chaque fond où il se dessine.
+  for (const bg of [...bgs, '--bubble-bg']) atLeast(l, '--focus', bg, 3);
   // Les couleurs d'état servent de texte (messages, compteurs) sur le fond comme sur les panneaux.
   for (const s of ['playing', 'completed', 'abandoned', 'played']) for (const bg of ['--bg', '--panel']) atLeast(l, `--st-${s}`, bg);
   for (const s of ['backlog', 'wishlist']) atLeast(l, `--st-${s}`, '--panel');
@@ -134,4 +136,10 @@ test('contraste AA en sombre', () => {
   const d = block(DARK);
   const bgs = ['--bg', '--panel', '--panel-2', '--bg-rail'];
   for (const fg of ['--text', '--dim', '--faint']) for (const bg of bgs) atLeast(d, fg, bg);
+});
+
+test('color-scheme n’apparaît que dans les blocs de thème', () => {
+  const bad = [];
+  stripRootBlocks(css).split('\n').forEach((line, i) => { if (/color-scheme/.test(line)) bad.push(`${i + 1}: ${line.trim()}`); });
+  assert.deepEqual(bad, [], 'color-scheme hors thème :\n' + bad.join('\n'));
 });

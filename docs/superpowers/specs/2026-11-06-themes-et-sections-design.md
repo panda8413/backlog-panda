@@ -55,7 +55,8 @@ Les autres valeurs (texte, couleurs d'état, accent lavande) sont inchangées. L
 | Texte secondaire | `#5e554c` |
 | Texte discret | `#736860` |
 | Bulle cuivrée : fond / bord / texte | `#f6e3d3` / `#e8bf9f` / `#8a4a22` |
-| Accent cuivre (focus, barres, curseur) | `#c8794a` |
+| Accent cuivre (barres, curseur) | `#c8794a` |
+| Focus (anneau, plus foncé pour ≥ 3:1 sur la barre latérale et la bulle) | `#b0623a` |
 | Étoiles | `#d99a00` |
 | Ombres | douces, brunes et peu opaques (`rgba(60, 40, 20, 0.08–0.18)`) au lieu des halos lumineux |
 
