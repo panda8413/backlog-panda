@@ -397,6 +397,7 @@ h2.section .n { font: 500 14px var(--font-ui); color: var(--faint); letter-spaci
   padding: 3px 9px 3px 7px;
   border-radius: 999px;
   background: var(--overlay-bg);
+  color: var(--overlay-fg);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
   font-size: 12px;
   font-weight: 600;

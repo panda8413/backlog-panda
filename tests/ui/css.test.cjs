@@ -12,7 +12,8 @@ const css = fs
 // (blocs de thème). Les blocs de thème ne contiennent pas d'accolades imbriquées :
 // un balayage jusqu'à la première `}` suffit.
 function stripRootBlocks(src) {
-  return src.replace(/(^|\})\s*:root[^{]*\{[^}]*\}/g, '$1');
+  // Contenu vidé, retours à la ligne conservés : les numéros de ligne restent ceux de app.css.
+  return src.replace(/(^|\})(\s*):root[^{]*\{[^}]*\}/g, (m, pre, ws) => pre + ws + m.slice((pre + ws).length).replace(/[^\n]/g, ''));
 }
 
 function block(selectorRe) {
