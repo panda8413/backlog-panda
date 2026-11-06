@@ -19,10 +19,11 @@ use std::time::Duration;
 const HTML: &str = "text/html; charset=utf-8";
 
 /// (chemin, type MIME, contenu) : l'interface est compilée dans l'exécutable.
-const ASSETS: [(&str, &str, &[u8]); 5] = [
+const ASSETS: [(&str, &str, &[u8]); 6] = [
     ("/", HTML, include_bytes!("../ui/index.html")),
     ("/app.css", "text/css; charset=utf-8", include_bytes!("../ui/app.css")),
     ("/app.js", "text/javascript; charset=utf-8", include_bytes!("../ui/app.js")),
+    ("/theme.js", "text/javascript; charset=utf-8", include_bytes!("../ui/theme.js")),
     ("/fonts/bricolage-grotesque-latin-wght-normal.woff2", "font/woff2", include_bytes!("../ui/fonts/bricolage-grotesque-latin-wght-normal.woff2")),
     ("/fonts/figtree-latin-wght-normal.woff2", "font/woff2", include_bytes!("../ui/fonts/figtree-latin-wght-normal.woff2")),
 ];
@@ -145,7 +146,7 @@ mod tests {
     #[test]
     fn sert_l_interface_avec_en_tetes_de_securite() {
         let (a, dir) = app("w1");
-        for (path, mime) in [("/", "text/html"), ("/index.html", "text/html"), ("/app.css", "text/css"), ("/app.js", "text/javascript"), ("/fonts/figtree-latin-wght-normal.woff2", "font/woff2")] {
+        for (path, mime) in [("/", "text/html"), ("/index.html", "text/html"), ("/app.css", "text/css"), ("/app.js", "text/javascript"), ("/theme.js", "text/javascript"), ("/fonts/figtree-latin-wght-normal.woff2", "font/woff2")] {
             let r = a.handle(&req("GET", path, ""));
             assert_eq!(r.status, 200, "{path}");
             assert!(r.content_type.starts_with(mime), "{path}");

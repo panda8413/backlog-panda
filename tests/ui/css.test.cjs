@@ -43,7 +43,7 @@ test('le bloc sombre porte les valeurs de la spec', () => {
     '--panel': '#1a2140',
     '--panel-2': '#222a50',
     '--dim': '#b0b6d4',
-    '--faint': '#7f86aa',
+    '--faint': '#8c92b3',
   };
   for (const [name, value] of Object.entries(expected)) {
     const m = dark.match(new RegExp(String.raw`${name}:\s*([^;]+);`));
@@ -83,17 +83,17 @@ test('le bloc clair porte les valeurs de la spec', () => {
     '--line-strong': 'rgba(60, 40, 20, 0.20)',
     '--text': '#1f1a16',
     '--dim': '#5e554c',
-    '--faint': '#776c62',
+    '--faint': '#736860',
     '--bubble-bg': '#f6e3d3',
     '--bubble-border': '#e8bf9f',
     '--bubble-fg': '#8a4a22',
     '--accent': '#c8794a',
     '--star': '#d99a00',
     '--st-backlog': '#2f6fd6',
-    '--st-playing': '#12855f',
-    '--st-completed': '#946200',
+    '--st-playing': '#107956',
+    '--st-completed': '#926100',
     '--st-played': '#6b4fd1',
-    '--st-abandoned': '#c8364f',
+    '--st-abandoned': '#c2344d',
     '--st-wishlist': '#c2408e',
   };
   for (const [name, value] of Object.entries(expected)) assert.equal(val(light, name), value.toLowerCase(), name);
@@ -101,6 +101,7 @@ test('le bloc clair porte les valeurs de la spec', () => {
 });
 
 function lum(hex) {
+  assert.match(hex, /^#[0-9a-f]{6}$/, `couleur hexadécimale à 6 chiffres attendue : ${hex}`);
   const n = parseInt(hex.slice(1), 16);
   const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
     const c = v / 255;
@@ -119,13 +120,18 @@ function atLeast(b, fg, bg, min = 4.5) {
 
 test('contraste AA en clair', () => {
   const l = block(LIGHT);
-  for (const fg of ['--text', '--dim', '--faint']) for (const bg of ['--bg', '--panel']) atLeast(l, fg, bg);
+  const bgs = ['--bg', '--panel', '--panel-2', '--bg-rail'];
+  for (const fg of ['--text', '--dim', '--faint']) for (const bg of bgs) atLeast(l, fg, bg);
   atLeast(l, '--bubble-fg', '--bubble-bg');
-  for (const s of ['backlog', 'playing', 'completed', 'played', 'abandoned', 'wishlist']) atLeast(l, `--st-${s}`, '--panel');
+  // Les couleurs d'état servent de texte (messages, compteurs) sur le fond comme sur les panneaux.
+  for (const s of ['playing', 'completed', 'abandoned', 'played']) for (const bg of ['--bg', '--panel']) atLeast(l, `--st-${s}`, bg);
+  for (const s of ['backlog', 'wishlist']) atLeast(l, `--st-${s}`, '--panel');
+  // `.bk-mode em` prend --bubble-fg sur la bulle cochée (règle claire).
+  assert.match(css, /\[data-theme="light"\] \.bk-mode:has\(input:checked\) em \{ color: var\(--bubble-fg\); \}/);
 });
 
 test('contraste AA en sombre', () => {
   const d = block(DARK);
-  for (const bg of ['--bg', '--panel']) for (const fg of ['--text', '--dim']) atLeast(d, fg, bg);
-  atLeast(d, '--faint', '--bg');
+  const bgs = ['--bg', '--panel', '--panel-2', '--bg-rail'];
+  for (const fg of ['--text', '--dim', '--faint']) for (const bg of bgs) atLeast(d, fg, bg);
 });

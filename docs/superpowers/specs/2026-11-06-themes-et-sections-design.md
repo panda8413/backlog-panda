@@ -38,7 +38,7 @@ Toutes les couleurs passent par des variables CSS sur `:root[data-theme="…"]`.
 | `--panel` | `#12172e` | `#1a2140` |
 | `--panel-2` | `#1a2040` | `#222a50` |
 | `--dim` | `#a6acca` | `#b0b6d4` |
-| `--faint` | `#70769a` | `#7f86aa` |
+| `--faint` | `#70769a` | `#8c92b3` |
 
 Les autres valeurs (texte, couleurs d'état, accent lavande) sont inchangées. Les fonds translucides calés sur l'ancien `#080b17` (`rgba(8, 11, 23, …)`) suivent le nouveau fond.
 
@@ -53,13 +53,13 @@ Les autres valeurs (texte, couleurs d'état, accent lavande) sont inchangées. L
 | Lignes | `rgba(60, 40, 20, 0.10)` / forte `rgba(60, 40, 20, 0.20)` |
 | Texte | `#1f1a16` |
 | Texte secondaire | `#5e554c` |
-| Texte discret | `#776c62` |
+| Texte discret | `#736860` |
 | Bulle cuivrée : fond / bord / texte | `#f6e3d3` / `#e8bf9f` / `#8a4a22` |
 | Accent cuivre (focus, barres, curseur) | `#c8794a` |
 | Étoiles | `#d99a00` |
 | Ombres | douces, brunes et peu opaques (`rgba(60, 40, 20, 0.08–0.18)`) au lieu des halos lumineux |
 
-Couleurs d'état en clair, plus foncées pour rester lisibles sur blanc : Backlog `#2f6fd6`, En cours `#12855f`, Terminé `#946200`, Joué `#6b4fd1`, Abandonné `#c8364f`, Envie `#c2408e`.
+Couleurs d'état en clair, plus foncées pour rester lisibles (≥ 4,5:1) sur le fond et sur blanc : Backlog `#2f6fd6`, En cours `#107956`, Terminé `#926100`, Joué `#6b4fd1`, Abandonné `#c2344d`, Envie `#c2408e`.
 
 Les **bulles cuivrées** habillent, en clair : l'onglet d'état actif, les filtres actifs, l'entrée de menu sélectionnée, les puces (genres…), le bouton principal et les boutons de choix de mode (import, CSV). En sombre, ces éléments gardent leur style actuel (accent lavande).
 

@@ -26,7 +26,7 @@
   --line-strong: rgba(180, 190, 255, 0.2);
   --text: #eef0fb;
   --dim: #b0b6d4;
-  --faint: #7f86aa;
+  --faint: #8c92b3;
 
   --st-backlog: #6aa8ff;
   --st-playing: #35d6a4;
@@ -93,20 +93,20 @@
   --line-strong: rgba(60, 40, 20, 0.20);
   --text: #1f1a16;
   --dim: #5e554c;
-  --faint: #776c62;
+  --faint: #736860;
 
   --st-backlog: #2f6fd6;
-  --st-playing: #12855f;
-  --st-completed: #946200;
+  --st-playing: #107956;
+  --st-completed: #926100;
   --st-played: #6b4fd1;
-  --st-abandoned: #c8364f;
+  --st-abandoned: #c2344d;
   --st-wishlist: #c2408e;
 
   --star: #d99a00;
   --star-end: #e0701f;
   --score-fg: #ffc24b;
   --star-base: rgba(60, 40, 20, 0.12);
-  --focus: #b5622f;
+  --focus: #c8794a;
   --accent: #c8794a;
   --track: rgba(60, 40, 20, 0.07);
   --track-strong: rgba(60, 40, 20, 0.14);
@@ -160,6 +160,7 @@
   color: var(--bubble-fg);
 }
 :root[data-theme="light"] .nav button[aria-current="page"] { box-shadow: none; }
+:root[data-theme="light"] .bk-mode:has(input:checked) em { color: var(--bubble-fg); }
 :root[data-theme="light"] .tab[aria-pressed="true"] .n { color: var(--bubble-fg); }
 :root[data-theme="light"] .flt.on select { border-color: var(--bubble-border); background-color: var(--bubble-bg); color: var(--bubble-fg); }
 :root[data-theme="light"] .btn.primary { border-color: var(--bubble-border); }
