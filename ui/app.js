@@ -1340,7 +1340,7 @@
     const pos = (v) => Math.min(100, (v / max) * 100) + '%';
     const sentence = over
       ? `${c.entry.hours_text}, au-delà du temps complet (${t.completely_text})`
-      : `${c.entry.hours_text}, soit ~${fmt(Math.round((mine / c.ttb_ref) * 100))} % du temps normal`;
+      : `${c.entry.hours_text}, soit ~${fmt(Math.round((mine / c.ttb_ref) * 100))} % du temps ${t.normally != null ? 'normal' : t.hastily != null ? 'rapide' : 'complet'}`;
     const marks = [['Rapide', t.hastily], ['Normal', t.normally], ['Complet', t.completely]]
       .filter(([, v]) => v != null)
       .map(([l, v]) => h('i', { class: 'ttb-mark', title: l, vars: { '--x': pos(v) } }));

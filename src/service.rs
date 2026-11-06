@@ -152,7 +152,7 @@ fn card(info: &GameInfo, entry: Option<&Entry>) -> Card {
         summary_fr: info.summary_fr.clone(),
         igdb_rating: info.rating,
         rev: info.rev,
-        ttb: info.time_to_beat.as_ref().map(TtbView::new),
+        ttb: info.time_to_beat.as_ref().filter(|t| t.reference().is_some()).map(TtbView::new),
         ttb_ref,
         ttb_text: ttb_ref.map(estimate_fr),
         hltb_url: hltb_url(&info.name),
@@ -1035,18 +1035,29 @@ impl Service {
         let Some(client) = client else {
             return Ok(json!({ "updated": 0, "pending": ids.len(), "mode": "offline" }));
         };
-        let mut updated = 0;
+        let (mut updated, mut done) = (0, 0);
         for chunk in ids.chunks(100) {
+            if done > 0 && !cfg!(test) {
+                // ne pas enchaîner les requêtes : IGDB limite le débit
+                std::thread::sleep(std::time::Duration::from_millis(300));
+            }
+            done += 1;
             let games = client.by_ids(chunk)?;
             let mut st = self.lock()?;
             for mut g in games {
                 keep_cached(st.store.games.get(&g.id), &mut g);
+                if g.rev >= REV_FULL {
+                    updated += 1;
+                }
                 st.store.games.insert(g.id, g);
-                updated += 1;
             }
             self.persist(&st)?;
         }
-        Ok(json!({ "updated": updated, "pending": ids.len() - updated.min(ids.len()), "mode": "igdb" }))
+        let pending = {
+            let st = self.lock()?;
+            ids.iter().filter(|id| st.store.games.get(id).is_none_or(|g| g.rev < REV_FULL)).count()
+        };
+        Ok(json!({ "updated": updated, "pending": pending, "mode": "igdb" }))
     }
 
 
@@ -1893,8 +1904,10 @@ mod tests {
         let ttb = crate::igdb::TimeToBeat { hastily: Some(72000), normally: Some(91200), completely: None, count: 3 };
         store.games.insert(1, GameInfo { id: 1, name: "Hades".into(), slug: "hades--1".into(), rev: REV_FULL, time_to_beat: Some(ttb), ..GameInfo::default() });
         store.games.insert(2, GameInfo { id: 2, name: "Celeste".into(), slug: "celeste--2".into(), rev: REV_FULL, ..GameInfo::default() });
+        store.games.insert(3, GameInfo { id: 3, name: "Vide".into(), slug: "vide--3".into(), rev: REV_FULL, time_to_beat: Some(crate::igdb::TimeToBeat::default()), ..GameInfo::default() });
         store.library.upsert(1, Status::Playing, None);
         store.library.upsert(2, Status::Backlog, None);
+        store.library.upsert(3, Status::Backlog, None);
         store.save(&dir).unwrap();
         let s = Service::open(&dir, FakeTransport::with(vec![])).unwrap();
         let lib = ok(s.call("library", &json!({})));
@@ -1911,6 +1924,8 @@ mod tests {
         assert_eq!(a["hltb_url"], "https://howlongtobeat.com/?q=Hades");
         assert_eq!((b["ttb"].clone(), b["ttb_ref"].clone(), b["ttb_text"].clone()), (Value::Null, Value::Null, Value::Null));
         assert_eq!(b["hltb_url"], "https://howlongtobeat.com/?q=Celeste");
+        let c = find(3);
+        assert_eq!((c["ttb"].clone(), c["ttb_ref"].clone()), (Value::Null, Value::Null), "entrée IGDB sans aucune durée utilisable");
         let _ = std::fs::remove_dir_all(&dir);
     }
 
@@ -2020,6 +2035,24 @@ mod tests {
         let again = ok(s.call("sync_metadata", &json!({})));
         assert_eq!(again["updated"], 0);
         assert_eq!(t.calls().len(), 3, "aucun appel réseau au second passage");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn sync_sans_durees_ne_compte_pas_les_fiches_incompletes() {
+        let dir = temp_dir("sync-echec-durees");
+        let mut store = crate::store::Store::default();
+        for (id, n) in [(1u64, "Hades"), (2, "Celeste")] {
+            store.games.insert(id, GameInfo { id, name: n.into(), slug: format!("{n}--{id}"), rev: 2, ..GameInfo::default() });
+            store.library.upsert(id, Status::Backlog, None);
+        }
+        store.save(&dir).unwrap();
+        let games = r#"[{"id":1,"name":"Hades","slug":"hades--1"},{"id":2,"name":"Celeste","slug":"celeste--2"}]"#;
+        let t = FakeTransport::with(vec![Ok(TOKEN_OK.into()), Ok(games.into()), Err(Error::Network("coupure".into()))]);
+        let s = Service::open(&dir, t).unwrap();
+        s.call("save_settings", &json!({"igdb_client_id": "a", "igdb_client_secret": "b"}));
+        let sync = ok(s.call("sync_metadata", &json!({})));
+        assert_eq!((sync["updated"].as_u64(), sync["pending"].as_u64()), (Some(0), Some(2)));
         let _ = std::fs::remove_dir_all(&dir);
     }
 

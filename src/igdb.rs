@@ -444,11 +444,22 @@ impl IgdbClient {
         // pour que la prochaine synchronisation réessaie.
         if !games.is_empty() && games.iter().all(|g| g.rev == REV_DETAILS) {
             let q = format!("fields game_id,hastily,normally,completely,count; where game_id = ({list}); limit 500;");
-            if let Ok(mut ttb) = self.post_to(TTB_URL, &q).and_then(|b| parse_time_to_beats(&b)) {
-                for g in &mut games {
-                    g.time_to_beat = ttb.remove(&g.id);
-                    g.rev = REV_FULL;
+            let mut res = self.post_to(TTB_URL, &q).and_then(|b| parse_time_to_beats(&b));
+            if matches!(res, Err(Error::Http(429, _))) {
+                // limite de débit : une seule nouvelle tentative, après une pause
+                if !cfg!(test) {
+                    std::thread::sleep(Duration::from_secs(1));
                 }
+                res = self.post_to(TTB_URL, &q).and_then(|b| parse_time_to_beats(&b));
+            }
+            match res {
+                Ok(mut ttb) => {
+                    for g in &mut games {
+                        g.time_to_beat = ttb.remove(&g.id);
+                        g.rev = REV_FULL;
+                    }
+                }
+                Err(e) => eprintln!("Durées de jeu IGDB indisponibles, nouvel essai à la prochaine synchronisation : {e}"),
             }
         }
         Ok(games)
@@ -724,6 +735,24 @@ mod tests {
         let games = IgdbClient::new(t, "id", "s").by_ids(&[7346]).unwrap();
         assert!(!games.is_empty());
         assert!(games.iter().all(|g| g.rev == REV_DETAILS && g.time_to_beat.is_none()));
+    }
+
+    #[test]
+    fn by_ids_reessaie_une_fois_sur_429() {
+        let ttb = r#"[{"game_id":7346,"normally":330000,"count":9}]"#;
+        let t = FakeTransport::with(vec![Ok(TOKEN_OK.into()), Ok(GAMES_SAMPLE.into()), Err(Error::Http(429, "trop".into())), Ok(ttb.into())]);
+        let games = IgdbClient::new(t.clone(), "id", "s").by_ids(&[7346]).unwrap();
+        assert_eq!(t.calls().len(), 4, "jeton, fiches, durées 429, durées ok");
+        assert!(games.iter().all(|g| g.rev == REV_FULL));
+        assert_eq!(games.iter().find(|g| g.id == 7346).unwrap().time_to_beat.as_ref().unwrap().normally, Some(330000));
+    }
+
+    #[test]
+    fn by_ids_abandonne_apres_deux_429_sans_erreur() {
+        let t = FakeTransport::with(vec![Ok(TOKEN_OK.into()), Ok(GAMES_SAMPLE.into()), Err(Error::Http(429, "a".into())), Err(Error::Http(429, "b".into()))]);
+        let games = IgdbClient::new(t.clone(), "id", "s").by_ids(&[7346]).unwrap();
+        assert_eq!(t.calls().len(), 4);
+        assert!(!games.is_empty() && games.iter().all(|g| g.rev == REV_DETAILS && g.time_to_beat.is_none()));
     }
 
     #[test]
